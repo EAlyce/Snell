@@ -23,19 +23,7 @@ fi
 wget -c https://dl.nssurge.com/snell/snell-server-v4.0.1-linux-$ARCHITECTURE.zip  # download binary
 unzip -o snell-server-v4.0.1-linux-$ARCHITECTURE.zip
 
-echo -e "[Unit]
-Description=snell server
-[Service]
-User=snell
-Group=snell
-WorkingDirectory=/root
-ExecStartPre=/path/to/pre-start-script.sh
-ExecStart=/root/snell-server
-ExecStopPost=/path/to/post-stop-script.sh
-Restart=always
-[Install]
-WantedBy=multi-user.target" > /etc/systemd/system/snell.service
-
+echo -e "[Unit]\nDescription=snell server\n[Service]\nUser=root\nWorkingDirectory=/root\nExecStart=/root/snell-server\nRestart=always\n[Install]\nWantedBy=multi-user.target" > /etc/systemd/system/snell.service
 echo "y" | ./snell-server
 systemctl start snell
 systemctl enable snell      # start service
