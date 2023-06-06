@@ -25,4 +25,6 @@ sudo bash -c "$(curl -sL https://raw.githubusercontent.com/ExaAlice/Snell/master
 ```
 systemctl status snell
 ```
+
+做了点小改动，适配Oracle arm机子
 代码参考自：整点猫咪、@SebErstellen
