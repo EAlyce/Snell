@@ -1,11 +1,5 @@
 #!/bin/bash
 
-# Create a new user for Snell
-sudo adduser snell
-
-# Add the new user to the sudo group (optional)
-sudo usermod -aG sudo snell
-
 # Install dependencies based on the Linux distribution
 if cat /etc/*-release | grep -q -E -i "debian|ubuntu|armbian|deepin|mint"; then
     sudo apt-get install wget unzip dpkg -y
