@@ -17,6 +17,9 @@ sysctl net.ipv4.tcp_available_congestion_control
 
 cd
 ARCHITECTURE=$(dpkg --print-architecture)
+if [ "$ARCHITECTURE" == "arm64" ]; then
+    ARCHITECTURE="aarch64"
+fi
 wget -c https://dl.nssurge.com/snell/snell-server-v4.0.1-linux-$ARCHITECTURE.zip	# download binary
 unzip -o snell-server-v4.0.1-linux-$ARCHITECTURE.zip
 
