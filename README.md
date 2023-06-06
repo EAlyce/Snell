@@ -41,4 +41,4 @@ echo "$(curl -s ipinfo.io/city) = snell, $(curl -s ipinfo.io/ip), $(cat snell-se
 
 做了点小改动，适配Oracle arm
 
-代码参考自：[整点猫咪](https://github.com/getsomecat)、@[SebErstellen](https://github.com/SebErstellen/snell)
+代码参考自：[整点猫咪](https://github.com/getsomecat)、[SebErstellen](https://github.com/SebErstellen/snell)
