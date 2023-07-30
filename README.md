@@ -1,7 +1,7 @@
 # Snell
 
 
-做了点小改动，适配Oracle arm
+适配Oracle ARM
 
 代码参考自：[SebErstellen](https://github.com/SebErstellen/snell)
 
