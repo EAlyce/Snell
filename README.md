@@ -3,7 +3,7 @@
 
 做了点小改动，适配Oracle arm
 
-代码参考自：[整点猫咪](https://github.com/getsomecat)、[SebErstellen](https://github.com/SebErstellen/snell)
+代码参考自：[SebErstellen](https://github.com/SebErstellen/snell)
 
 Snell一键安装脚本
 
