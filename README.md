@@ -1,4 +1,4 @@
-# Snell
+# Snell无混淆一键安装脚本
 
 
 适配Oracle ARM
