@@ -32,6 +32,9 @@ fi
 # 启用BBR
 echo "net.core.default_qdisc=fq" >> /etc/sysctl.conf  
 echo "net.ipv4.tcp_congestion_control=bbr" >> /etc/sysctl.conf
+echo "net.ipv4.udp_mem = 65536 131072 262144" >> /etc/sysctl.conf
+echo "net.ipv4.udp_rmem_min = 16384" >> /etc/sysctl.conf
+echo "net.ipv4.udp_wmem_min = 16384" >> /etc/sysctl.conf
 sysctl -p
 sysctl net.ipv4.tcp_available_congestion_control
 # 内核调优
