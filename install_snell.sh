@@ -1,35 +1,36 @@
 #!/bin/bash
 # 作者 Chat GPT
 # 自用脚本
+# 安装所需依赖
+apt-get install -y wget unzip docker-compose
+
+# 检测系统架构
+ARCH=$(uname -m)
 
 echo "请选择 Snell 的版本："
 echo "1. v3"
 echo "2. v4"
 read -p "输入选择（1/2）: " choice
 
-# 检测系统类型
-ARCH=$(uname -m)
-if [ "$ARCH" == "x86_64" ]; then
-  ARCH_SUFFIX="amd64.zip"
-elif [ "$ARCH" == "aarch64" ]; then
-  ARCH_SUFFIX="aarch64.zip"
-else
-  echo "不支持的系统架构: $ARCH"
-  exit 1
-fi
-
-# 根据选择设置软件源
+# 根据选择和系统架构设置软件源
 case $choice in
-  1) SNELL_URL="https://github.com/xOS/Others/raw/master/snell/v3.0.1/snell-server-v3.0.1-linux-$ARCH_SUFFIX";;
-  2) SNELL_URL="https://dl.nssurge.com/snell/snell-server-v4.0.1-linux-$ARCH_SUFFIX";;
+  1) if [ "$ARCH" == "aarch64" ]; then
+       SNELL_URL="https://github.com/xOS/Others/raw/master/snell/v3.0.1/snell-server-v3.0.1-linux-aarch64.zip"
+     else
+       SNELL_URL="https://github.com/xOS/Others/raw/master/snell/v3.0.1/snell-server-v3.0.1-linux-amd64.zip"
+     fi
+     VERSION_NUMBER="3";;
+  2) if [ "$ARCH" == "aarch64" ]; then
+       SNELL_URL="https://dl.nssurge.com/snell/snell-server-v4.0.1-linux-aarch64.zip"
+     else
+       SNELL_URL="https://dl.nssurge.com/snell/snell-server-v4.0.1-linux-amd64.zip"
+     fi
+     VERSION_NUMBER="4";;
   *) echo "无效选择"; exit 1;;
 esac
 
-# 安装所需依赖
-apt-get install -y wget unzip docker-compose
-
 # 随机端口号
-PORT_NUMBER=$(shuf -i 8000-8999 -n 1)
+PORT_NUMBER=$(shuf -i 8000-50000 -n 1)
 # 随机密码
 PASSWORD=$(openssl rand -base64 12)
 # 创建特定端口的文件夹
