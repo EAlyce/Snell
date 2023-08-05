@@ -21,16 +21,21 @@ function list_containers() {
   done
   echo "$i. 删除所有容器"
   container_map[$i]="all"
+  i=$((i+1))
+  echo "$i. 退出脚本"
+  container_map[$i]="exit"
   read -p "输入选择（输入数字）： " choice
 
   # 检查用户输入是否为数字且在范围内
   if [[ $choice =~ ^[0-9]+$ ]] && [ $choice -ge 1 ] && [ $choice -le $i ]; then
     if [ "${container_map[$choice]}" == "all" ]; then
       for key in ${!container_map[@]}; do
-        if [ "${container_map[$key]}" != "all" ]; then
+        if [ "${container_map[$key]}" != "all" ] && [ "${container_map[$key]}" != "exit" ]; then
           remove_container ${container_map[$key]}
         fi
       done
+    elif [ "${container_map[$choice]}" == "exit" ]; then
+      exit 0
     else
       remove_container ${container_map[$choice]}
     fi
