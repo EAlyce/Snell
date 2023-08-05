@@ -12,6 +12,11 @@ echo "1. v3"
 echo "2. v4"
 read -p "输入选择（1/2）: " choice
 
+# 如果输入不是2，则默认选择1
+if [ "$choice" != "2" ]; then
+  choice="1"
+fi
+
 # 根据选择和系统架构设置软件源
 case $choice in
   1) if [ "$ARCH" == "aarch64" ]; then
