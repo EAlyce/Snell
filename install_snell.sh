@@ -38,8 +38,10 @@ docker-compose pull && docker-compose up -d
 
 # 打印节点内容
 echo
-echo "Snell$PORT_NUMBER"
-echo "IP Address: $(curl -s ifconfig.me)"
-echo "snell"
-echo "Port Number: $PORT_NUMBER"
-echo "PSK: As112211"
+echo "- name: Snell$PORT_NUMBER"
+echo "  type: snell"
+echo "  server: $(curl -s ifconfig.me)"
+echo "  port: $PORT_NUMBER"
+echo "  psk: As112211"
+echo "  version: 3"
+echo "  udp: true"
