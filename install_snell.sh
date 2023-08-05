@@ -129,7 +129,7 @@ docker-compose pull && docker-compose up -d
 echo
 if [ "$choice" == "1" ]; then
   LOCATION=$(curl -s ipinfo.io/city)
-  echo "- name: $LOCATION Snell$PORT_NUMBER"
+  echo "- name: $LOCATION Snell v$VERSION_NUMBER $PORT_NUMBER"
   echo "  type: snell"
   echo "  server: $(curl -s ifconfig.me)"
   echo "  port: $PORT_NUMBER"
@@ -137,8 +137,8 @@ if [ "$choice" == "1" ]; then
   echo "  version: $VERSION_NUMBER"
   echo "  udp: true"
   echo
-  echo "$LOCATION Snell$PORT_NUMBER = snell, $(curl -s ifconfig.me), $PORT_NUMBER, psk=$PASSWORD, version=$VERSION_NUMBER, tfo=true"
+  echo "$LOCATION Snell v$VERSION_NUMBER $PORT_NUMBER = snell, $(curl -s ifconfig.me), $PORT_NUMBER, psk=$PASSWORD, version=$VERSION_NUMBER, tfo=true"
 elif [ "$choice" == "2" ]; then
   LOCATION=$(curl -s ipinfo.io/city)
-  echo "$LOCATION Snell$PORT_NUMBER = snell, $(curl -s ifconfig.me), $PORT_NUMBER, psk=$PASSWORD, version=$VERSION_NUMBER, tfo=true"
+  echo "$LOCATION Snell v$VERSION_NUMBER $PORT_NUMBER = snell, $(curl -s ifconfig.me), $PORT_NUMBER, psk=$PASSWORD, version=$VERSION_NUMBER, tfo=true"
 fi
