@@ -38,7 +38,8 @@ docker-compose pull && docker-compose up -d
 
 # 打印节点内容
 echo
-echo "Your Snell node has been set up with the following configuration:"
+echo "Snell$PORT_NUMBER"
+echo "IP Address: $(curl -s ifconfig.me)"
+echo "snell"
 echo "Port Number: $PORT_NUMBER"
 echo "PSK: As112211"
-echo "Container Name: Snell$PORT_NUMBER"
