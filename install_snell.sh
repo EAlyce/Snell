@@ -75,7 +75,7 @@ fi
 # 如果输入不是2，则默认选择1
 if [[ "$choice" != "2" ]]; then
   choice="1"
-fifi
+fi
 
 # 根据选择和系统架构设置软件源
 case $choice in
