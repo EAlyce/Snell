@@ -1,6 +1,10 @@
 #!/bin/bash
 # 作者 Chat GPT
 # 项目地址：https://github.com/ExaAlice/Snell
+
+#安装常用软件
+apt update && apt -y upgrade && apt install curl wget git vim nano sudo python3 python3-pip -
+
 # 检查是否安装了 Docker 和 Docker Compose
 if ! command -v docker > /dev/null; then
    echo "Docker 未安装. 正在安装 Docker..."
@@ -43,7 +47,7 @@ chmod +x LinuxKernelRegulation.sh
 ./LinuxKernelRegulation.sh
 
 # 更新
-apt-get update && apt-get upgrade -y
+apt-get update -y && apt-get upgrade -y && apt-get dist-upgrade -y && apt full-upgrade -y
 
 
 # 检测系统架构
