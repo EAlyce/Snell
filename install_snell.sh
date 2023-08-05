@@ -4,6 +4,16 @@
 # 安装所需依赖
 apt-get install -y wget unzip docker-compose
 
+# 检查 Docker Compose 的版本
+DOCKER_COMPOSE_VERSION=$(docker-compose --version | awk '{ print $3 }' | cut -d ',' -f1)
+MINIMUM_SUPPORTED_VERSION="1.25.5"
+
+# 如果 Docker Compose 的版本小于最小支持的版本，进行升级
+if [ "$(printf '%s\n' "$MINIMUM_SUPPORTED_VERSION" "$DOCKER_COMPOSE_VERSION" | sort -V | head -n1)" = "$MINIMUM_SUPPORTED_VERSION" ]; then 
+  sudo curl -L "https://github.com/docker/compose/releases/download/1.29.2/docker-compose-$(uname -s)-$(uname -m)" -o /usr/local/bin/docker-compose
+  sudo chmod +x /usr/local/bin/docker-compose
+fi
+
 # 检测系统架构
 ARCH=$(uname -m)
 
