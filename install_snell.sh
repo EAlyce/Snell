@@ -19,8 +19,23 @@ if ! service --status-all | grep -Fq 'docker'; then
   service docker start
 fi
 # 安装所需依赖
+if cat /etc/*-release | grep -q -E -i "debian|ubuntu|armbian|deepin|mint"; then   
+  apt-get install -y wget unzip dpkg
+elif cat /etc/*-release | grep -q -E -i "centos|red hat|redhat"; then
+  yum install -y wget unzip dpkg
+elif cat /etc/*-release | grep -q -E -i "arch|manjaro"; then
+  yes | pacman -S wget unzip dpkg
+elif cat /etc/*-release | grep -q -E -i "fedora"; then
+  dnf install -y wget unzip dpkg
+fi
+
+# 启用BBR
+echo "net.core.default_qdisc=fq" >> /etc/sysctl.conf  
+echo "net.ipv4.tcp_congestion_control=bbr" >> /etc/sysctl.conf
+sysctl -p
+sysctl net.ipv4.tcp_available_congestion_control
+# 安装所需依赖
 apt-get update
-apt-get install -y wget unzip
 
 # 检测系统架构
 ARCH=$(uname -m)
