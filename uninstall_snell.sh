@@ -9,13 +9,13 @@ containers=($snell_containers)
 echo "选择要卸载的Snell容器："
 i=1
 for container in "${containers[@]}"; do
-  echo "$i. $container"
+  echo "$i. $(echo $container | cut -d ':' -f2)"
   i=$((i+1))
 done
 echo "$i. 删除所有容器"
 echo "$((i+1)). 退出脚本"
 
-read -p "输入选择： " choice
+read -p "输入选择（输入数字）： " choice
 
 if [[ $choice -eq $i ]]; then
   # 删除所有Snell容器
