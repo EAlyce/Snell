@@ -1,4 +1,6 @@
 #!/bin/bash
+# chmod +x install_snell.sh
+# ./install_snell.sh
 
 # 安装所需依赖
 apt-get install -y wget unzip docker-compose
