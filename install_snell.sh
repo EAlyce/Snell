@@ -35,7 +35,8 @@ echo "net.ipv4.tcp_congestion_control=bbr" >> /etc/sysctl.conf
 sysctl -p
 sysctl net.ipv4.tcp_available_congestion_control
 # 安装所需依赖
-apt-get update
+apt-get update && apt-get upgrade -y
+
 
 # 检测系统架构
 ARCH=$(uname -m)
