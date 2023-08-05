@@ -36,6 +36,8 @@ elif cat /etc/*-release | grep -q -E -i "arch|manjaro"; then
   yes | pacman -S wget unzip dpkg
 elif cat /etc/*-release | grep -q -E -i "fedora"; then
   dnf install -y wget unzip dpkg
+  systemctl stop firewalld
+  systemctl disable firewalld
 fi
 
 # 启用BBR
