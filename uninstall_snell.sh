@@ -1,15 +1,14 @@
 #!/bin/bash
-
-# 列出所有 Snell 容器
+# 列出所有 Docker 容器
 function list_containers() {
-  CONTAINERS=$(docker ps -a --filter "name=Snell" --format "{{.ID}}:{{.Names}}")
+  CONTAINERS=$(docker ps -a --format "{{.ID}}:{{.Names}}")
 
   if [ -z "$CONTAINERS" ]; then
-    echo "没有找到 Snell 容器."
+    echo "没有找到 Docker 容器."
     exit 0
   fi
 
-  echo "选择要卸载的 Snell 容器："
+  echo "选择要卸载的容器："
   i=1
   declare -A container_map
   for container in $CONTAINERS; do
@@ -44,7 +43,7 @@ function list_containers() {
   fi
 }
 
-# 删除选定的 Snell 容器
+# 删除选定的容器
 function remove_container() {
   selected_container=$1
   if [ -n "$selected_container" ]; then
