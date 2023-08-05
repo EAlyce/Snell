@@ -2,14 +2,6 @@
 # 作者 Chat GPT
 # 项目地址：https://github.com/ExaAlice/Snell
 # Backup old resolv.conf
-cp /etc/resolv.conf /etc/resolv.conf.backup
-
-# Set DNS to 1.1.1.1 and 8.8.8.8
-echo "nameserver 1.1.1.1" > /etc/resolv.conf
-echo "nameserver 8.8.8.8" >> /etc/resolv.conf
-#安装常用软件
-apt update && apt -y upgrade && apt install curl wget git vim nano sudo python3 python3-pip -
-
 # 检查是否安装了 Docker 和 Docker Compose
 if ! command -v docker > /dev/null; then
    echo "Docker 未安装. 正在安装 Docker..."
@@ -36,25 +28,10 @@ elif cat /etc/*-release | grep -q -E -i "arch|manjaro"; then
   yes | pacman -S wget unzip dpkg
 elif cat /etc/*-release | grep -q -E -i "fedora"; then
   dnf install -y wget unzip dpkg
-  systemctl stop firewalld
-  systemctl disable firewalld
 fi
 
-# 启用BBR
-echo "net.core.default_qdisc=fq" >> /etc/sysctl.conf  
-echo "net.ipv4.tcp_congestion_control=bbr" >> /etc/sysctl.conf
-echo "net.ipv4.udp_mem = 65536 131072 262144" >> /etc/sysctl.conf
-echo "net.ipv4.udp_rmem_min = 16384" >> /etc/sysctl.conf
-echo "net.ipv4.udp_wmem_min = 16384" >> /etc/sysctl.conf
-sysctl -p
-sysctl net.ipv4.tcp_available_congestion_control
-# 内核调优
-wget https://raw.githubusercontent.com/ExaAlice/Alice/main/Script/LinuxKernelRegulation.sh
-chmod +x LinuxKernelRegulation.sh
-./LinuxKernelRegulation.sh
-
 # 更新
-apt-get update -y && apt-get upgrade -y && apt-get dist-upgrade -y && apt full-upgrade -y
+apt-get update
 
 
 # 检测系统架构
