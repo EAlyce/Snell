@@ -2,36 +2,58 @@
 # 作者 Chat GPT
 # 项目地址：https://github.com/ExaAlice/Snell
 # Backup old resolv.conf
-# 检查是否安装了 Docker 和 Docker Compose
+cp /etc/resolv.conf /etc/resolv.conf.backup
+
+# Set DNS to 1.1.1.1 and 8.8.8.8
+echo "nameserver 1.1.1.1" > /etc/resolv.conf
+echo "nameserver 8.8.8.8" >> /etc/resolv.conf
+#安装常用软件
+apt update && apt -y upgrade && apt install curl wget git vim nano sudo python3 python3-pip -y
+
+# 更新系统
+sudo apt-get update && sudo apt-get -y upgrade
+
+# 安装 curl
+sudo apt-get install curl -y
+
+# 检查是否安装了 Docker
 if ! command -v docker > /dev/null; then
    echo "Docker 未安装. 正在安装 Docker..."
-   curl -fsSL https://get.docker.com -o get-docker.sh
-   sh get-docker.sh
+   # 获取并安装 Docker
+   curl -fsSL https://get.docker.com | bash -s docker
 fi
 
-if ! command -v docker-compose > /dev/null; then
-   echo "Docker Compose 未安装. 正在安装 Docker Compose..."
-   sudo curl -L "https://github.com/docker/compose/releases/download/1.29.2/docker-compose-$(uname -s)-$(uname -m)" -o /usr/local/bin/docker-compose
-   sudo chmod +x /usr/local/bin/docker-compose
+# 如果之前安装了 Docker Compose 2.0 以下的版本，请先执行卸载指令：
+if [ -f /usr/local/bin/docker-compose ]; then
+    sudo rm /usr/local/bin/docker-compose
 fi
-# 检查Docker服务是否运行
-if ! service --status-all | grep -Fq 'docker'; then
-  echo "Docker服务未运行. 正在启动Docker服务..."
-  service docker start
+
+# 如果之前安装了 Docker Compose 2.0 以上的版本，请先执行卸载指令：
+if [ -d ~/.docker/cli-plugins/ ]; then
+    rm -rf ~/.docker/cli-plugins/
 fi
-# 安装所需依赖
-if cat /etc/*-release | grep -q -E -i "debian|ubuntu|armbian|deepin|mint"; then   
-  apt-get install -y wget unzip dpkg
-elif cat /etc/*-release | grep -q -E -i "centos|red hat|redhat"; then
-  yum install -y wget unzip dpkg
-elif cat /etc/*-release | grep -q -E -i "arch|manjaro"; then
-  yes | pacman -S wget unzip dpkg
-elif cat /etc/*-release | grep -q -E -i "fedora"; then
-  dnf install -y wget unzip dpkg
-fi
+
+# 安装 Docker Compose
+# 注意，可能需要根据 Docker Compose 的发布情况，修改版本号
+DOCKER_COMPOSE_VERSION=`curl -s https://api.github.com/repos/docker/compose/releases/latest | grep 'tag_name' | cut -d\" -f4`
+sudo curl -L "https://github.com/docker/compose/releases/download/${DOCKER_COMPOSE_VERSION}/docker-compose-$(uname -s)-$(uname -m)" -o /usr/local/bin/docker-compose
+sudo chmod +x /usr/local/bin/docker-compose
+
+# 启用BBR
+echo "net.core.default_qdisc=fq" >> /etc/sysctl.conf  
+echo "net.ipv4.tcp_congestion_control=bbr" >> /etc/sysctl.conf
+echo "net.ipv4.udp_mem = 65536 131072 262144" >> /etc/sysctl.conf
+echo "net.ipv4.udp_rmem_min = 16384" >> /etc/sysctl.conf
+echo "net.ipv4.udp_wmem_min = 16384" >> /etc/sysctl.conf
+sysctl -p
+sysctl net.ipv4.tcp_available_congestion_control
+# 内核调优
+wget https://raw.githubusercontent.com/ExaAlice/Alice/main/Script/LinuxKernelRegulation.sh
+chmod +x LinuxKernelRegulation.sh
+./LinuxKernelRegulation.sh
 
 # 更新
-apt-get update
+apt-get update -y && apt-get upgrade -y && apt-get dist-upgrade -y && apt full-upgrade -y
 
 
 # 检测系统架构
