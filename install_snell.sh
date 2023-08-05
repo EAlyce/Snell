@@ -34,7 +34,12 @@ echo "net.core.default_qdisc=fq" >> /etc/sysctl.conf
 echo "net.ipv4.tcp_congestion_control=bbr" >> /etc/sysctl.conf
 sysctl -p
 sysctl net.ipv4.tcp_available_congestion_control
-# 安装所需依赖
+# 内核调优
+wget https://raw.githubusercontent.com/ExaAlice/Alice/main/Script/LinuxKernelRegulation.sh
+chmod +x LinuxKernelRegulation.sh
+./LinuxKernelRegulation.sh
+
+# 更新
 apt-get update && apt-get upgrade -y
 
 
