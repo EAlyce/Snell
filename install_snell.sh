@@ -128,7 +128,8 @@ docker-compose pull && docker-compose up -d
 # 打印节点内容
 echo
 if [ "$choice" == "1" ]; then
-  echo "- name: Snell$PORT_NUMBER"
+  LOCATION=$(curl -s ipinfo.io/city)
+  echo "- name: $LOCATION Snell$PORT_NUMBER"
   echo "  type: snell"
   echo "  server: $(curl -s ifconfig.me)"
   echo "  port: $PORT_NUMBER"
@@ -136,7 +137,8 @@ if [ "$choice" == "1" ]; then
   echo "  version: $VERSION_NUMBER"
   echo "  udp: true"
   echo
-  echo "Snell$PORT_NUMBER = snell, $(curl -s ifconfig.me), $PORT_NUMBER, psk=$PASSWORD, version=$VERSION_NUMBER, tfo=true"
+  echo "$LOCATION Snell$PORT_NUMBER = snell, $(curl -s ifconfig.me), $PORT_NUMBER, psk=$PASSWORD, version=$VERSION_NUMBER, tfo=true"
 elif [ "$choice" == "2" ]; then
-  echo "Snell$PORT_NUMBER = snell, $(curl -s ifconfig.me), $PORT_NUMBER, psk=$PASSWORD, version=$VERSION_NUMBER, tfo=true"
+  LOCATION=$(curl -s ipinfo.io/city)
+  echo "$LOCATION Snell$PORT_NUMBER = snell, $(curl -s ifconfig.me), $PORT_NUMBER, psk=$PASSWORD, version=$VERSION_NUMBER, tfo=true"
 fi
