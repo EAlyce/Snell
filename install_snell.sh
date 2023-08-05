@@ -1,18 +1,26 @@
 #!/bin/bash
 # 作者 Chat GPT
 # 项目地址：https://github.com/ExaAlice/Snell
-# 安装所需依赖
-apt-get install -y wget unzip docker-compose
-
-# 检查 Docker Compose 的版本
-DOCKER_COMPOSE_VERSION=$(docker-compose --version | awk '{ print $3 }' | cut -d ',' -f1)
-MINIMUM_SUPPORTED_VERSION="1.25.5"
-
-# 如果 Docker Compose 的版本小于最小支持的版本，进行升级
-if [ "$(printf '%s\n' "$MINIMUM_SUPPORTED_VERSION" "$DOCKER_COMPOSE_VERSION" | sort -V | head -n1)" = "$MINIMUM_SUPPORTED_VERSION" ]; then 
-  sudo curl -L "https://github.com/docker/compose/releases/download/1.29.2/docker-compose-$(uname -s)-$(uname -m)" -o /usr/local/bin/docker-compose
-  sudo chmod +x /usr/local/bin/docker-compose
+# 检查是否安装了 Docker 和 Docker Compose
+if ! command -v docker > /dev/null; then
+   echo "Docker 未安装. 正在安装 Docker..."
+   curl -fsSL https://get.docker.com -o get-docker.sh
+   sh get-docker.sh
 fi
+
+if ! command -v docker-compose > /dev/null; then
+   echo "Docker Compose 未安装. 正在安装 Docker Compose..."
+   sudo curl -L "https://github.com/docker/compose/releases/download/1.29.2/docker-compose-$(uname -s)-$(uname -m)" -o /usr/local/bin/docker-compose
+   sudo chmod +x /usr/local/bin/docker-compose
+fi
+# 检查Docker服务是否运行
+if ! service --status-all | grep -Fq 'docker'; then
+  echo "Docker服务未运行. 正在启动Docker服务..."
+  service docker start
+fi
+# 安装所需依赖
+apt-get update
+apt-get install -y wget unzip
 
 # 检测系统架构
 ARCH=$(uname -m)
@@ -23,19 +31,19 @@ echo "2. v4"
 read -p "输入选择（默认选择1）: " choice
 
 # 如果输入不是2，则默认选择1
-if [ "$choice" != "2" ]; then
+if [[ "$choice" != "2" ]]; then
   choice="1"
 fi
 
 # 根据选择和系统架构设置软件源
 case $choice in
-  1) if [ "$ARCH" == "aarch64" ]; then
+  1) if [[ "$ARCH" == "aarch64" ]]; then
        SNELL_URL="https://github.com/xOS/Others/raw/master/snell/v3.0.1/snell-server-v3.0.1-linux-aarch64.zip"
      else
        SNELL_URL="https://github.com/xOS/Others/raw/master/snell/v3.0.1/snell-server-v3.0.1-linux-amd64.zip"
      fi
      VERSION_NUMBER="3";;
-  2) if [ "$ARCH" == "aarch64" ]; then
+  2) if [[ "$ARCH" == "aarch64" ]]; then
        SNELL_URL="https://dl.nssurge.com/snell/snell-server-v4.0.1-linux-aarch64.zip"
      else
        SNELL_URL="https://dl.nssurge.com/snell/snell-server-v4.0.1-linux-amd64.zip"
@@ -52,9 +60,7 @@ PASSWORD=$(openssl rand -base64 12)
 NODE_DIR="/root/snelldocker/Snell$PORT_NUMBER"
 mkdir -p $NODE_DIR
 cd $NODE_DIR
-# 从URL获取版本号的第一个数字
-SNELL_URL="https://github.com/xOS/Others/raw/master/snell/v3.0.1/snell-server-v3.0.1-linux-amd64.zip"
-VERSION_NUMBER=$(echo "$SNELL_URL" | grep -oP 'snell-server-v\K[0-9]')
+
 # 创建Docker compose文件
 cat > ./docker-compose.yml << EOF
 version: "3.8"
