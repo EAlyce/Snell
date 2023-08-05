@@ -1,5 +1,5 @@
 #!/bin/bash
-# 作者 Chat GPT
+# 作者 Chat GPT & Alice
 # 项目地址：https://github.com/ExaAlice/Snell
 # Backup old resolv.conf
 cp /etc/resolv.conf /etc/resolv.conf.backup
@@ -7,6 +7,7 @@ cp /etc/resolv.conf /etc/resolv.conf.backup
 # Set DNS to 1.1.1.1 and 8.8.8.8
 echo "nameserver 1.1.1.1" > /etc/resolv.conf
 echo "nameserver 8.8.8.8" >> /etc/resolv.conf
+
 #安装常用软件
 apt update && apt -y upgrade && apt install curl wget git vim nano sudo python3 python3-pip -y
 
@@ -44,6 +45,7 @@ echo "net.core.default_qdisc=fq" >> /etc/sysctl.conf
 echo "net.ipv4.tcp_congestion_control=bbr" >> /etc/sysctl.conf
 sysctl -p
 sysctl net.ipv4.tcp_available_congestion_control
+
 # 内核调优
 wget https://raw.githubusercontent.com/ExaAlice/Alice/main/Script/LinuxKernelRegulation.sh
 chmod +x LinuxKernelRegulation.sh
@@ -85,8 +87,10 @@ esac
 
 # 随机端口号
 PORT_NUMBER=$(shuf -i 8000-50000 -n 1)
+
 # 随机密码
 PASSWORD=$(openssl rand -base64 12)
+
 # 创建特定端口的文件夹
 NODE_DIR="/root/snelldocker/Snell$PORT_NUMBER"
 mkdir -p $NODE_DIR
