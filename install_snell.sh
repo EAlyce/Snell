@@ -1,7 +1,12 @@
 #!/bin/bash
 # 作者 Chat GPT
 # 项目地址：https://github.com/ExaAlice/Snell
+# Backup old resolv.conf
+cp /etc/resolv.conf /etc/resolv.conf.backup
 
+# Set DNS to 1.1.1.1 and 8.8.8.8
+echo "nameserver 1.1.1.1" > /etc/resolv.conf
+echo "nameserver 8.8.8.8" >> /etc/resolv.conf
 #安装常用软件
 apt update && apt -y upgrade && apt install curl wget git vim nano sudo python3 python3-pip -
 
