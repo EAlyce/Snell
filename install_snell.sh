@@ -1,6 +1,6 @@
 #!/bin/bash
 # 作者 Chat GPT
-# 自用脚本
+# 项目地址：https://github.com/ExaAlice/Snell
 # 安装所需依赖
 apt-get install -y wget unzip docker-compose
 
