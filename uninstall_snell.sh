@@ -1,29 +1,38 @@
 #!/bin/bash
 
-# 获取 Snell 容器列表
-CONTAINERS=$(docker ps -a --filter "name=Snell" --format "{{.ID}} {{.Names}}" | nl -w 1 -s '. ')
+while true; do
+  # 列出所有 Snell 容器
+    containers=$(docker ps --filter "name=Snell" --format "{{.ID}}: {{.Names}}")
+      echo "选择要卸载的 Snell 容器："
 
-if [ -z "$CONTAINERS" ]; then
-  echo "没有找到 Snell 容器."
-    exit 0
-    fi
+        i=1
+          declare -A container_map
+            for container in $containers; do
+                echo "$i. $container"
+                    container_map[$i]=$container
+                        ((i++))
+                          done
 
-    echo "找到以下 Snell 容器："
-    echo "$CONTAINERS"
+                            echo "$i. 退出脚本"
 
-    # 选择一个容器来卸载
-    read -p "请输入你想要卸载的容器编号: " CHOICE
+                              # 提示用户选择
+                                read -p "输入选择（1/$i）: " choice
 
-    # 获取所选容器的 ID
-    CONTAINER_ID=$(docker ps -a --filter "name=Snell" --format "{{.ID}}" | sed "${CHOICE}q;d")
+                                  if [ "$choice" -eq "$i" ]; then
+                                      echo "退出脚本."
+                                          exit 0
+                                            fi
 
-    # 停止容器
-    echo "正在停止容器 $CONTAINER_ID ..."
-    docker stop $CONTAINER_ID
-
-    # 删除容器
-    echo "正在删除容器 $CONTAINER_ID ..."
-    docker rm $CONTAINER_ID
-
-    echo "卸载完成！"
-    
+                                              # 获取容器ID并卸载
+                                                container_id=${container_map[$choice]}
+                                                  container_id=${container_id%%:*}
+                                                    if [ ! -z "$container_id" ]; then
+                                                        echo "正在卸载容器 $container_id..."
+                                                            docker stop $container_id
+                                                                docker rm $container_id
+                                                                    echo "已卸载容器 $container_id."
+                                                                      else
+                                                                          echo "选择无效."
+                                                                            fi
+                                                                            done
+                                                                            
