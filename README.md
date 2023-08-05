@@ -15,4 +15,9 @@ curl -sL https://raw.githubusercontent.com/ExaAlice/Snell/master/install_snell.s
 
 ```
 
+二、卸载
+```
+bash -c "$(curl -sL https://raw.githubusercontent.com/ExaAlice/Snell/master/uninstall_snell.sh)"
+```
+
 
