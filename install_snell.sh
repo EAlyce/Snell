@@ -23,7 +23,8 @@ sudo apt-get install -y net-tools unzip zip gcc g++ make iptables
 echo "All tools and libraries installed successfully!"
 
 #更新所有包
-echo '1' | sudo apt-get update -y && echo '1' | sudo apt-get upgrade -y && echo '1' | sudo apt-get dist-upgrade -y && echo '1' | sudo apt full-upgrade -y
+apt-get update -y && apt-get upgrade -y && apt-get dist-upgrade -y && apt full-upgrade -y
+
 # Kill all apt and dpkg processes
 sudo pkill apt
 sudo pkill dpkg
