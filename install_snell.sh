@@ -51,6 +51,15 @@ DOCKER_COMPOSE_VERSION=`curl -s https://api.github.com/repos/docker/compose/rele
 sudo curl -L "https://github.com/docker/compose/releases/download/${DOCKER_COMPOSE_VERSION}/docker-compose-$(uname -s)-$(uname -m)" -o /usr/local/bin/docker-compose
 sudo chmod +x /usr/local/bin/docker-compose
 
+# 开始Docker守护程序
+sudo systemctl start docker
+
+# 将当前用户添加到docker组
+sudo usermod -aG docker $USER
+
+# 打印消息，提醒用户注销并重新登录
+echo "请注销并重新登录或重启你的系统，以确保组设置生效。"
+
 # 启用BBR
 echo "net.core.default_qdisc=fq" >> /etc/sysctl.conf  
 echo "net.ipv4.tcp_congestion_control=bbr" >> /etc/sysctl.conf
