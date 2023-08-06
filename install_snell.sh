@@ -2,6 +2,12 @@
 # 作者 Chat GPT & Alice
 # 项目地址：https://github.com/ExaAlice/Snell
 # Backup old resolv.conf
+echo "请选择一个操作："
+echo "1: 不执行更新，直接部署Snell"
+echo "2: 更新然后部署"
+read -p "输入选择 (1/2): " choice
+
+if [ "$choice" == "2" ]; then
 cp /etc/resolv.conf /etc/resolv.conf.backup
 
 # Set DNS to 1.1.1.1 and 8.8.8.8
@@ -203,6 +209,22 @@ case "$response" in
         exit 1
         ;;
 esac
+
+# 询问
+    read -p "系统优化完成，是否继续部署Snell节点? [y/N] " response
+    case "$response" in
+        [yY][eE][sS]|[yY]|"") 
+            # 当用户输入yes, y或直接按Enter时执行下面的命令
+            ;;
+        *)
+            echo "操作已取消。"
+            exit 1
+            ;;
+    esac
+elif [ "$choice" != "1" ]; then
+    echo "无效的选择!"
+    exit 1
+fi
 
 # 检测系统架构
 ARCH=$(uname -m)
