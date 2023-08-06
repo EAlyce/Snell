@@ -85,8 +85,19 @@ case $choice in
   *) echo "无效选择"; exit 1;;
 esac
 
-# 随机端口号
-PORT_NUMBER=$(shuf -i 8000-50000 -n 1)
+# 排除的端口列表
+EXCLUDED_PORTS=(21 22 23 25 53 80 110 443 465 587 3306 3389 5432 5900 6379 8080)
+
+# 随机生成端口号
+PORT_NUMBER=$(shuf -i 1000-9999 -n 1)
+
+# 检查端口是否已经被使用或在排除列表中
+while nc -z 127.0.0.1 $PORT_NUMBER || [[ " ${EXCLUDED_PORTS[@]} " =~ " ${PORT_NUMBER} " ]]; do
+  echo "Port $PORT_NUMBER is in use or in the exclusion list. Generating a new one..."
+  PORT_NUMBER=$(shuf -i 1000-9999 -n 1)
+done
+
+echo "Port $PORT_NUMBER is available."
 
 # 随机密码
 PASSWORD=$(openssl rand -base64 12)
