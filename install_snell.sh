@@ -68,6 +68,11 @@ sudo usermod -aG docker $USER
 
 # 打印消息，提醒用户注销并重新登录
 echo "请注销并重新登录或重启你的系统，以确保组设置生效。"
+# 启用TFO客户端功能
+echo 3 > /proc/sys/net/ipv4/tcp_fastopen
+
+# 如果您使用的是iptables，允许TFO数据包
+iptables -A INPUT -p tcp --tcp-flags SYN SYN -j ACCEPT
 
 # 启用BBR
 # 验证当前用户是否为root。
