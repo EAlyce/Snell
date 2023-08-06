@@ -8,9 +8,6 @@ cp /etc/resolv.conf /etc/resolv.conf.backup
 echo "nameserver 1.1.1.1" > /etc/resolv.conf
 echo "nameserver 8.8.8.8" >> /etc/resolv.conf
 
-# 更新
-sudo apt-get update -y && sudo apt-get upgrade -y && sudo apt-get dist-upgrade -y && sudo apt full-upgrade -y
-
 # 安装 curl 和其他常用软件
 sudo apt-get install -y curl wget git vim nano sudo python3 python3-pip
 
