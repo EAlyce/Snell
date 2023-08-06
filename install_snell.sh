@@ -260,12 +260,16 @@ done
 
 echo "Port $PORT_NUMBER is available."
 
+# 安装iptables-persistent
+sudo apt-get install -y iptables-persistent
+
+# 强制开放该端口
+sudo iptables -A INPUT -p tcp --dport $PORT_NUMBER -j ACCEPT
+echo "Port $PORT_NUMBER has been opened in iptables."
+
 # 预先设置debconf的选择
 echo "iptables-persistent iptables-persistent/autosave_v4 boolean true" | sudo debconf-set-selections
 echo "iptables-persistent iptables-persistent/autosave_v6 boolean true" | sudo debconf-set-selections
-
-# 安装iptables-persistent
-sudo apt-get install -y iptables-persistent
 
 
 # 随机密码
