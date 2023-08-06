@@ -79,7 +79,8 @@ apt-get update -y && apt-get upgrade -y && apt-get dist-upgrade -y && apt full-u
 # 询问
 read -p "系统优化完成，是否继续部署Snell节点? [y/N] " response
 case "$response" in
-    [yY][eE][sS]|[yY]) 
+    [yY][eE][sS]|[yY]|"") 
+        # 当用户输入yes, y或直接按Enter时执行下面的命令
         ;;
     *)
         echo "操作已取消。"
@@ -187,14 +188,14 @@ elif [ "$choice" == "2" ]; then
 fi
 
 # 提示用户是否重启
-read -p "你想要重启系统吗? (y/Y) " answer
+read -p "你想要重启系统吗? [Y/n] " answer
 
 case $answer in
-    y|Y) # y或Y被认为是确认重启
+    y|Y|"") # y、Y或直接按Enter被认为是确认重启
         echo "正在重启系统..."
         sudo reboot
         ;;
-    *) # 除了y或Y的其他任何输入都直接退出脚本
+    *) # 除了y、Y或直接按Enter的其他任何输入都直接退出脚本
         echo "退出脚本."
         exit 0
         ;;
