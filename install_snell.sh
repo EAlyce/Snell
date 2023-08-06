@@ -18,6 +18,17 @@ echo "All tools and libraries installed successfully!"
 
 #更新所有包
 echo '1' | sudo apt-get update -y && echo '1' | sudo apt-get upgrade -y && echo '1' | sudo apt-get dist-upgrade -y && echo '1' | sudo apt full-upgrade -y
+# Kill all apt and dpkg processes
+sudo pkill apt
+sudo pkill dpkg
+
+# Remove lock files to free up the package manager
+sudo rm /var/lib/dpkg/lock-frontend
+sudo rm /var/lib/apt/lists/lock
+sudo dpkg --configure -a
+
+# Restart Docker service
+sudo systemctl restart docker
 
 # 检查是否安装了 Docker
 if ! command -v docker > /dev/null; then
@@ -174,3 +185,17 @@ elif [ "$choice" == "2" ]; then
   LOCATION=$(curl -s ipinfo.io/city)
   echo "$LOCATION Snell v$VERSION_NUMBER $PORT_NUMBER = snell, $(curl -s ifconfig.me), $PORT_NUMBER, psk=$PASSWORD, version=$VERSION_NUMBER, tfo=true"
 fi
+
+# 提示用户是否重启
+read -p "你想要重启系统吗? (y/Y) " answer
+
+case $answer in
+    y|Y) # y或Y被认为是确认重启
+        echo "正在重启系统..."
+        sudo reboot
+        ;;
+    *) # 除了y或Y的其他任何输入都直接退出脚本
+        echo "退出脚本."
+        exit 0
+        ;;
+esac
