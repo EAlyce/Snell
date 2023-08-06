@@ -8,14 +8,22 @@ cp /etc/resolv.conf /etc/resolv.conf.backup
 echo "nameserver 1.1.1.1" > /etc/resolv.conf
 echo "nameserver 8.8.8.8" >> /etc/resolv.conf
 
-#安装常用软件
-apt update && apt -y upgrade && apt install curl wget git vim nano sudo python3 python3-pip -y
+# 安装 curl 和其他常用软件
+sudo apt-get install -y curl wget git vim nano sudo python3 python3-pip
 
-# 更新系统
-sudo apt-get update && sudo apt-get -y upgrade
+# 安装额外的工具
+sudo apt-get install -y tmux htop net-tools unzip zip gcc g++ make tree jq
 
-# 安装 curl
-sudo apt-get install curl -y
+# 安装更多的库和工具
+sudo apt-get install -y build-essential libssl-dev libffi-dev libxml2-dev libxslt-dev libjpeg-dev
+
+# 安装 xz-utils、openssl、gawk、file、wget 和 screen
+sudo apt-get install -y xz-utils openssl gawk file wget screen
+
+echo "All tools and libraries installed successfully!"
+
+#更新所有包
+echo '1' | sudo apt-get update -y && echo '1' | sudo apt-get upgrade -y && echo '1' | sudo apt-get dist-upgrade -y && echo '1' | sudo apt full-upgrade -y
 
 # 检查是否安装了 Docker
 if ! command -v docker > /dev/null; then
@@ -153,50 +161,3 @@ elif [ "$choice" == "2" ]; then
   LOCATION=$(curl -s ipinfo.io/city)
   echo "$LOCATION Snell v$VERSION_NUMBER $PORT_NUMBER = snell, $(curl -s ifconfig.me), $PORT_NUMBER, psk=$PASSWORD, version=$VERSION_NUMBER, tfo=true"
 fi
-# 加入到脚本的最后部分
-
-# 列出所有节点信息的函数
-function list_nodes() {
-    echo "当前所有Snell节点信息："
-    for dir in /root/snelldocker/*; do
-        if [ -d "$dir" ]; then
-            # 提取端口号和密码
-            PORT_NUMBER=$(grep 'listen' $dir/snell-conf/snell.conf | cut -d':' -f2 | tr -d ' ')
-            PASSWORD=$(grep 'psk' $dir/snell-conf/snell.conf | cut -d'=' -f2 | tr -d ' ')
-            
-            # 输出节点信息
-            echo "- name: Snell $PORT_NUMBER"
-            echo "  type: snell"
-            echo "  server: $(curl -s ifconfig.me)"
-            echo "  port: $PORT_NUMBER"
-            echo "  psk: $PASSWORD"
-            echo
-        fi
-    done
-}
-
-# 在菜单中加入新的功能
-echo "请选择操作："
-echo "1. 创建新的Snell节点"
-echo "2. 列出所有Snell节点信息"
-echo "3. 退出"
-read -p "输入选择： " choice
-
-case $choice in
-  1) 
-    # 原有的创建Snell节点的代码
-    ;;
-  2)
-    # 调用列出所有节点信息的函数
-    list_nodes
-    ;;
-  3)
-    # 退出脚本
-    exit 0
-    ;;
-  *)
-    echo "无效选择"
-    exit 1
-    ;;
-esac
-
