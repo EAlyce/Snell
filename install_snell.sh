@@ -12,16 +12,7 @@ echo "nameserver 8.8.8.8" >> /etc/resolv.conf
 sudo apt-get install -y curl wget git vim nano sudo python3 python3-pip
 
 # 安装额外的工具
-sudo apt-get install -y tmux htop net-tools unzip zip gcc g++ make tree jq
-
-# 安装更多的库和工具
-sudo apt-get install -y build-essential libssl-dev libffi-dev libxml2-dev libxslt-dev libjpeg-dev
-
-# 安装 xz-utils、openssl、gawk、file、wget 和 screen
-sudo apt-get install -y xz-utils openssl gawk file wget screen
-
-# 安装新增的软件
-sudo apt-get install -y epel-release python3-distutils
+sudo apt-get install -y net-tools unzip zip gcc g++ make
 
 echo "All tools and libraries installed successfully!"
 
