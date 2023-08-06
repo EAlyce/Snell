@@ -14,6 +14,15 @@ cp /etc/resolv.conf /etc/resolv.conf.backup
 echo "nameserver 1.1.1.1" > /etc/resolv.conf
 echo "nameserver 8.8.8.8" >> /etc/resolv.conf
 
+# Kill all apt and dpkg processes
+sudo pkill apt
+sudo pkill dpkg
+
+# Remove lock files to free up the package manager
+sudo rm /var/lib/dpkg/lock-frontend
+sudo rm /var/lib/apt/lists/lock
+sudo dpkg --configure -a
+
 # 安装 curl 和其他常用软件
 sudo apt-get install -y curl wget git vim nano sudo iptables python3 python3-pip
 
@@ -24,15 +33,6 @@ echo "All tools and libraries installed successfully!"
 
 #更新所有包
 apt-get update -y && apt-get upgrade -y && apt-get dist-upgrade -y && apt full-upgrade -y
-
-# Kill all apt and dpkg processes
-sudo pkill apt
-sudo pkill dpkg
-
-# Remove lock files to free up the package manager
-sudo rm /var/lib/dpkg/lock-frontend
-sudo rm /var/lib/apt/lists/lock
-sudo dpkg --configure -a
 
 # Restart Docker service
 sudo systemctl restart docker
