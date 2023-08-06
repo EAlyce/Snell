@@ -217,22 +217,17 @@ if [[ "$choice" != "2" ]]; then
   choice="1"
 fi
 
-# 根据选择和系统架构设置软件源
+BASE_URL=""
+SUB_PATH=""
+
 case $choice in
-  1) if [[ "$ARCH" == "aarch64" ]]; then
-       SNELL_URL="https://github.com/xOS/Others/raw/master/snell/v3.0.1/snell-server-v3.0.1-linux-aarch64.zip"
-     else
-       SNELL_URL="https://github.com/xOS/Others/raw/master/snell/v3.0.1/snell-server-v3.0.1-linux-amd64.zip"
-     fi
-     VERSION_NUMBER="3";;
-  2) if [[ "$ARCH" == "aarch64" ]]; then
-       SNELL_URL="https://dl.nssurge.com/snell/snell-server-v4.0.1-linux-aarch64.zip"
-     else
-       SNELL_URL="https://dl.nssurge.com/snell/snell-server-v4.0.1-linux-amd64.zip"
-     fi
-     VERSION_NUMBER="4";;
-  *) echo "无效选择"; exit 1;;
+  1) BASE_URL="https://github.com/xOS/Others/raw/master/snell"; SUB_PATH="v3.0.1/snell-server-v3.0.1"; VERSION_NUMBER="3" ;;
+  2) BASE_URL="https://dl.nssurge.com/snell"; SUB_PATH="snell-server-v4.0.1"; VERSION_NUMBER="4" ;;
+  *) echo "无效选择"; exit 1 ;;
 esac
+
+[[ "$ARCH" == "aarch64" ]] && ARCH_TYPE="linux-aarch64.zip" || ARCH_TYPE="linux-amd64.zip"
+SNELL_URL="${BASE_URL}/${SUB_PATH}-${ARCH_TYPE}"
 
 # 排除的端口列表
 EXCLUDED_PORTS=(21 22 23 25 53 80 110 443 465 587 3306 3389 5432 5900 6379 8080 1234 1111 2345 7890 8989 8964 9929 4837 1521 1433 1444 1434)
