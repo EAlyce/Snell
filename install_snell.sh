@@ -9,10 +9,10 @@ echo "nameserver 1.1.1.1" > /etc/resolv.conf
 echo "nameserver 8.8.8.8" >> /etc/resolv.conf
 
 # 安装 curl 和其他常用软件
-sudo apt-get install -y curl wget git vim nano sudo python3 python3-pip
+sudo apt-get install -y curl wget git vim nano sudo iptables python3 python3-pip
 
 # 安装额外的工具
-sudo apt-get install -y net-tools unzip zip gcc g++ make
+sudo apt-get install -y net-tools unzip zip gcc g++ make iptables
 
 echo "All tools and libraries installed successfully!"
 
@@ -119,7 +119,7 @@ case $choice in
 esac
 
 # 排除的端口列表
-EXCLUDED_PORTS=(21 22 23 25 53 80 110 443 465 587 3306 3389 5432 5900 6379 8080)
+EXCLUDED_PORTS=(21 22 23 25 53 80 110 443 465 587 3306 3389 5432 5900 6379 8080 1234 1111 2345 7890 8989 8964 9929 4837 1521 1433 1444 1434)
 
 # 随机生成端口号
 PORT_NUMBER=$(shuf -i 1000-9999 -n 1)
@@ -131,6 +131,14 @@ while nc -z 127.0.0.1 $PORT_NUMBER || [[ " ${EXCLUDED_PORTS[@]} " =~ " ${PORT_NU
 done
 
 echo "Port $PORT_NUMBER is available."
+
+# 预先设置debconf的选择
+echo "iptables-persistent iptables-persistent/autosave_v4 boolean true" | sudo debconf-set-selections
+echo "iptables-persistent iptables-persistent/autosave_v6 boolean true" | sudo debconf-set-selections
+
+# 安装iptables-persistent
+sudo apt-get install -y iptables-persistent
+
 
 # 随机密码
 PASSWORD=$(openssl rand -base64 12)
