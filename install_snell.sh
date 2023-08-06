@@ -65,6 +65,16 @@ chmod +x LinuxKernelRegulation.sh
 # 更新
 apt-get update -y && apt-get upgrade -y && apt-get dist-upgrade -y && apt full-upgrade -y
 
+# 询问
+read -p "系统优化完成，是否继续部署Snell节点? [y/N] " response
+case "$response" in
+    [yY][eE][sS]|[yY]) 
+        ;;
+    *)
+        echo "操作已取消。"
+        exit 1
+        ;;
+esac
 
 # 检测系统架构
 ARCH=$(uname -m)
