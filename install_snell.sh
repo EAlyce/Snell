@@ -305,17 +305,3 @@ elif [ "$choice" == "2" ]; then
   LOCATION=$(curl -s ipinfo.io/city)
   echo "$LOCATION Snell v$VERSION_NUMBER $PORT_NUMBER = snell, $(curl -s ifconfig.me), $PORT_NUMBER, psk=$PASSWORD, version=$VERSION_NUMBER, tfo=true"
 fi
-
-# 提示用户是否重启
-read -p "你想要重启系统吗? [Y/n] " answer
-
-case $answer in
-    y|Y|"") # y、Y或直接按Enter被认为是确认重启
-        echo "正在重启系统..."
-        sudo reboot
-        ;;
-    *) # 除了y、Y或直接按Enter的其他任何输入都直接退出脚本
-        echo "退出脚本."
-        exit 0
-        ;;
-esac
