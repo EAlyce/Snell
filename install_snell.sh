@@ -260,16 +260,60 @@ SNELL_URL="${BASE_URL}/${SUB_PATH}-${ARCH_TYPE}"
 # 排除的端口列表
 EXCLUDED_PORTS=(21 22 23 25 42 53 80 110 135 136 137 138 139 443 444 445 465 587 593 1025 1026 1027 1028 1068 1111 1234 1433 1434 1444 1521 2345 3127 3128 3129 3130 3306 3389 4444 5432 5554 5800 5900 6379 7890 8080 8964 8989 9929 9996 4837)
 
-# 随机生成端口号
-PORT_NUMBER=$(shuf -i 1000-9999 -n 1)
+# 随机生成Nginx监听端口号
+NGINX_PORT=$(shuf -i 1000-9999 -n 1)
 
-# 检查端口是否已经被使用或在排除列表中
-while nc -z 127.0.0.1 $PORT_NUMBER || [[ " ${EXCLUDED_PORTS[@]} " =~ " ${PORT_NUMBER} " ]]; do
-  echo "Port $PORT_NUMBER is in use or in the exclusion list. Generating a new one..."
-  PORT_NUMBER=$(shuf -i 1000-9999 -n 1)
+# 随机生成Snell监听端口号
+SNELL_PORT=$(shuf -i 1000-9999 -n 1)
+
+# 检查Nginx端口是否已经被使用或在排除列表中
+while nc -z 127.0.0.1 $NGINX_PORT || [[ " ${EXCLUDED_PORTS[@]} " =~ " ${NGINX_PORT} " ]]; do
+  echo "Port $NGINX_PORT is in use or in the exclusion list. Generating a new one..."
+  NGINX_PORT=$(shuf -i 1000-9999 -n 1)
 done
 
-echo "Port $PORT_NUMBER is available."
+# 检查Snell端口是否已经被使用或在排除列表中
+while nc -z 127.0.0.1 $SNELL_PORT || [[ " ${EXCLUDED_PORTS[@]} " =~ " ${SNELL_PORT} " ]] || [[ "$SNELL_PORT" -eq "$NGINX_PORT" ]]; do
+  echo "Port $SNELL_PORT is in use, in the exclusion list or matches the Nginx port. Generating a new one..."
+  SNELL_PORT=$(shuf -i 1000-9999 -n 1)
+done
+
+echo "Nginx port: $NGINX_PORT"
+echo "Snell port: $SNELL_PORT"
+
+# 安装Nginx
+sudo apt update
+sudo apt install -y nginx
+
+# 配置Nginx作为反向代理，并启用连接复用
+cat <<EOF | sudo tee /etc/nginx/sites-available/proxy_server
+server {
+    listen $NGINX_PORT;
+
+    location / {
+        proxy_pass http://127.0.0.1:$SNELL_PORT;  # 代理到Snell监听的端口
+        proxy_http_version 1.1;
+        proxy_set_header Connection "";
+        
+        # 使用连接复用
+        proxy_set_header Host $host;
+        proxy_set_header X-Real-IP $remote_addr;
+        proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
+    }
+
+    # 连接复用设置
+    upstream backend {
+        server 127.0.0.1:$SNELL_PORT; 
+        keepalive 32;
+    }
+}
+EOF
+
+# 创建符号链接并重启Nginx
+sudo ln -s /etc/nginx/sites-available/proxy_server /etc/nginx/sites-enabled/
+sudo systemctl restart nginx
+
+echo "Nginx proxy server with connection reuse is set up on port $NGINX_PORT and forwarding to Snell on 127.0.0.1:$SNELL_PORT!"
 
 # 预先设置debconf的选择
 echo "iptables-persistent iptables-persistent/autosave_v4 boolean true" | sudo debconf-set-selections
