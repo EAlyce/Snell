@@ -19,12 +19,11 @@ cp "${resolv_conf}" "${resolv_conf}.backup"
 echo "nameserver 1.1.1.1" > "${resolv_conf}"
 echo "nameserver 8.8.8.8" >> "${resolv_conf}"
 
-# 优雅地结束 apt 进程
-sudo apt-get -f install
 
-# 如果必要，强制结束任何剩余的 apt、dpkg、和 unattended-upgrades 进程
-sudo pkill apt
-sudo pkill dpkg
+
+# 如果必要，强制结束任何剩余的 apt、dpkg
+sudo pkill -9 apt
+sudo pkill -9 dpkg
 
 # Remove lock files to free up the package manager
 sudo rm /var/lib/dpkg/lock-frontend
