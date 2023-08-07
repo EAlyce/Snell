@@ -9,9 +9,6 @@ read -p "输入选择 (1/2): " choice
 
 if [ "$choice" == "2" ]; then
 
-# 设置错误处理
-set -eu
-
 # 定义路径变量
 resolv_conf="/etc/resolv.conf"
 
@@ -22,18 +19,12 @@ cp "${resolv_conf}" "${resolv_conf}.backup"
 echo "nameserver 1.1.1.1" > "${resolv_conf}"
 echo "nameserver 8.8.8.8" >> "${resolv_conf}"
 
-
-# 停止所有自动更新
-sudo systemctl stop unattended-upgrades
-
 # 优雅地结束 apt 进程
 sudo apt-get -f install
 
 # 如果必要，强制结束任何剩余的 apt、dpkg、和 unattended-upgrades 进程
 sudo pkill apt
 sudo pkill dpkg
-sudo pkill unattended-upgr
-
 
 # Remove lock files to free up the package manager
 sudo rm /var/lib/dpkg/lock-frontend
