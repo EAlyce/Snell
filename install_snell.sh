@@ -8,15 +8,32 @@ echo "2: 更新然后部署"
 read -p "输入选择 (1/2): " choice
 
 if [ "$choice" == "2" ]; then
-cp /etc/resolv.conf /etc/resolv.conf.backup
 
-# Set DNS to 1.1.1.1 and 8.8.8.8
-echo "nameserver 1.1.1.1" > /etc/resolv.conf
-echo "nameserver 8.8.8.8" >> /etc/resolv.conf
+# 设置错误处理
+set -eu
 
-# Kill all apt and dpkg processes
+# 定义路径变量
+resolv_conf="/etc/resolv.conf"
+
+# 备份原文件
+cp "${resolv_conf}" "${resolv_conf}.backup"
+
+# 设置DNS服务器
+echo "nameserver 1.1.1.1" > "${resolv_conf}"
+echo "nameserver 8.8.8.8" >> "${resolv_conf}"
+
+
+# 停止所有自动更新
+sudo systemctl stop unattended-upgrades
+
+# 优雅地结束 apt 进程
+sudo apt-get -f install
+
+# 如果必要，强制结束任何剩余的 apt、dpkg、和 unattended-upgrades 进程
 sudo pkill apt
 sudo pkill dpkg
+sudo pkill unattended-upgr
+
 
 # Remove lock files to free up the package manager
 sudo rm /var/lib/dpkg/lock-frontend
@@ -28,8 +45,6 @@ sudo apt-get install -y curl wget git vim nano sudo iptables python3 python3-pip
 
 # 安装额外的工具
 sudo apt-get install -y net-tools unzip zip gcc g++ make iptables
-
-echo "All tools and libraries installed successfully!"
 
 #更新所有包
 apt-get update -y && apt-get upgrade -y && apt-get dist-upgrade -y && apt full-upgrade -y
@@ -247,7 +262,7 @@ esac
 SNELL_URL="${BASE_URL}/${SUB_PATH}-${ARCH_TYPE}"
 
 # 排除的端口列表
-EXCLUDED_PORTS=(21 22 23 25 42 53 80 110 135 136 137 138 139 443 444 445 465 587 593 1025 1026 1027 1028 1068 1111 1234 1433 1434 1444 1521 2345 3127 3128 3129 3130 3306 3389 4444 5432 5554 5800 20 21 22 23 25 26 53 110 143 443 465 587 1433 1521 3306 3389 5432 5900 6379 7890 8080 8964 8989 9929 9996 4837 )
+EXCLUDED_PORTS=(20 21 22 23 25 26 42 53 80 110 135 136 137 138 139 143 443 444 445 465 587 593 1025 1026 1027 1028 1068 1111 1234 1433 1434 1444 1521 2345 3127 3128 3129 3130 3306 3389 4444 5432 5554 5800 5900 6379 7890 8080 8964 8989 9929 9996 4837)
 
 # 随机生成端口号
 PORT_NUMBER=$(shuf -i 1000-9999 -n 1)
@@ -260,6 +275,10 @@ done
 
 echo "Port $PORT_NUMBER is available."
 
+# 预先设置debconf的选择
+echo "iptables-persistent iptables-persistent/autosave_v4 boolean true" | sudo debconf-set-selections
+echo "iptables-persistent iptables-persistent/autosave_v6 boolean true" | sudo debconf-set-selections
+
 # 安装iptables-persistent
 sudo apt-get install -y iptables-persistent
 
@@ -267,13 +286,9 @@ sudo apt-get install -y iptables-persistent
 sudo iptables -A INPUT -p tcp --dport $PORT_NUMBER -j ACCEPT
 echo "Port $PORT_NUMBER has been opened in iptables."
 
-# 预先设置debconf的选择
-echo "iptables-persistent iptables-persistent/autosave_v4 boolean true" | sudo debconf-set-selections
-echo "iptables-persistent iptables-persistent/autosave_v6 boolean true" | sudo debconf-set-selections
-
-
-# 随机密码
-PASSWORD=$(openssl rand -base64 12)
+# 生成随机密码
+PASSWORD=$(cat /dev/urandom | tr -dc 'A-Za-z0-9' | head -c 18)
+echo $PASSWORD
 
 # 创建特定端口的文件夹
 NODE_DIR="/root/snelldocker/Snell$PORT_NUMBER"
