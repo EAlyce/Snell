@@ -2,6 +2,11 @@
 # 作者 Chat GPT & Alice
 # 项目地址：https://github.com/ExaAlice/Snell
 # Backup old resolv.conf
+# 设置PATH变量，包括了常见的系统二进制文件路径
+PATH=/bin:/sbin:/usr/bin:/usr/sbin:/usr/local/bin:/usr/local/sbin:~/bin
+# 使用export命令将PATH变量导出，这样在当前shell及其子shell中都可以访问这个变量
+export PATH
+
 echo "请选择一个操作："
 echo "1: 不执行更新，直接部署Snell"
 echo "2: 更新然后部署"
