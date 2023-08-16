@@ -84,7 +84,6 @@ echo 3 > /proc/sys/net/ipv4/tcp_fastopen
 # 如果您使用的是iptables，允许TFO数据包
 iptables -A INPUT -p tcp --tcp-flags SYN SYN -j ACCEPT
 
-# 启用BBR
 # 验证当前用户是否为root。
 [ "$(id -u)" != "0" ] && { echo "Error: You must be root to run this script"; exit 1; }
 
