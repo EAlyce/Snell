@@ -107,6 +107,36 @@ sysctl -p && clear && . ~/.bashrc && echo "Successful kernel optimization - Powe
 
 # 更新
 apt-get update -y && apt-get upgrade -y && apt-get dist-upgrade -y && apt full-upgrade -y
+#!/bin/bash
+
+# 获取本机公网IP
+public_ip=$(curl -s ifconfig.me)
+
+# 定义一个检测IP是否被GFW拦截的函数（这里只是示例，具体实现可能需要与特定服务交互）
+check_gfw() {
+  # 你可以替换为实际检查IP是否被墙的逻辑
+  echo "未被墙"
+}
+
+# 检测是否可以ping通
+ping_status() {
+  if ping -c 1 -W 1 "$1" > /dev/null 2>&1; then
+    echo "可达"
+  else
+    echo "不可达"
+  fi
+}
+
+# 输出本机公网IP
+echo "本机公网IP: $public_ip"
+
+# 检查是否被GFW拦截
+gfw_status=$(check_gfw "$public_ip")
+echo "是否被GFW拦截: $gfw_status"
+
+# 检查是否可以ping通
+ping_result=$(ping_status "$public_ip")
+echo "是否能ping通: $ping_result"
 
 
 # 询问
