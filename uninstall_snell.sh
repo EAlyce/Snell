@@ -12,6 +12,13 @@ function remove_container() {
       echo "停止容器失败。"
       return
     fi
+    echo "正在查找与容器名 $container_name 相同的文件夹..."
+    find / -type d -name "$container_name" -exec echo "找到文件夹 '{}' " \;
+    read -p "确定要删除容器及找到的文件夹吗? (y/N): " confirmation
+    if [ "$confirmation" != "y" ]; then
+      echo "删除操作已取消。"
+      return
+    fi
     echo "正在删除容器 $selected_container ..."
     docker rm $selected_container
     if [ $? -ne 0 ]; then
@@ -19,12 +26,7 @@ function remove_container() {
       return
     fi
     echo "容器 $selected_container 已删除。"
-    # 自动查找名为 "snelldocker" 的文件夹，并检查与容器名相同的文件夹
-    if [ -n "$container_name" ]; then
-      find / -type d -name "snelldocker" -exec sh -c 'folder_to_remove="$1/$2"; if [ -d "$folder_to_remove" ]; then echo "正在删除文件夹 '\''$folder_to_remove'\'' ..."; rm -rf "$folder_to_remove"; echo "文件夹 '\''$folder_to_remove'\'' 已删除。"; else echo "未找到与容器名 '\''$2'\'' 相同的文件夹。"; fi' _ {} "$container_name" \;
-    else
-      echo "未知错误，无法找到容器名。"
-    fi
+    find / -type d -name "$container_name" -exec sh -c 'echo "正在删除文件夹 '\''{}'\'' ..."; rm -rf "{}"; echo "文件夹 '\''{}'\'' 已删除。"' \;
   else
     echo "未知错误，无法找到容器。"
   fi
@@ -77,3 +79,4 @@ function list_containers() {
 }
 
 list_containers
+
