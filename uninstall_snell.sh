@@ -12,18 +12,8 @@ function remove_container() {
     docker rm $selected_container
     echo "容器 $selected_container 已删除。"
 
-    folder_to_delete="/snelldocker/$container_name" # 这里的路径应与您的实际情况一致
-    if [ -d "$folder_to_delete" ]; then
-      echo "正在删除文件夹 '$folder_to_delete' ..."
-      sudo rm -rf "$folder_to_delete"
-      if [ $? -eq 0 ]; then
-        echo "文件夹 '$folder_to_delete' 已删除。"
-      else
-        echo "删除文件夹 '$folder_to_delete' 失败。"
-      fi
-    else
-      echo "未找到文件夹 '$folder_to_delete'。"
-    fi
+    echo "正在查找与容器名 $container_name 相同的文件夹..."
+    find / -type d -name "$container_name" -exec sh -c 'echo "正在删除文件夹 '\''{}'\'' ..."; sudo rm -rf "{}"; echo "文件夹 '\''{}'\'' 已删除。"' \;
   else
     echo "未知错误，无法找到容器。"
   fi
