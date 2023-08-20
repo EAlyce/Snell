@@ -3,7 +3,7 @@
 # 删除选定的容器和相关持久化文件夹
 function remove_container() {
   selected_container=$1
-  mount_points=$(docker inspect --format '{{ range .Mounts }}{{ .Source }} {{ end }}' $selected_container)
+  container_name=$(docker ps --filter "id=$selected_container" --format "{{.Names}}")
 
   if [ -n "$selected_container" ]; then
     echo "正在停止容器 $selected_container ..."
@@ -12,19 +12,18 @@ function remove_container() {
     docker rm $selected_container
     echo "容器 $selected_container 已删除。"
 
-    for mount_point in $mount_points; do
-      if [ -d "$mount_point" ]; then
-        echo "正在删除文件夹 '$mount_point' ..."
-        sudo rm -rf "$mount_point"
-        if [ $? -eq 0 ]; then
-          echo "文件夹 '$mount_point' 已删除。"
-        else
-          echo "删除文件夹 '$mount_point' 失败。"
-        fi
+    folder_to_delete="/snelldocker/$container_name" # 这里的路径应与您的实际情况一致
+    if [ -d "$folder_to_delete" ]; then
+      echo "正在删除文件夹 '$folder_to_delete' ..."
+      sudo rm -rf "$folder_to_delete"
+      if [ $? -eq 0 ]; then
+        echo "文件夹 '$folder_to_delete' 已删除。"
       else
-        echo "未找到文件夹 '$mount_point'。"
+        echo "删除文件夹 '$folder_to_delete' 失败。"
       fi
-    done
+    else
+      echo "未找到文件夹 '$folder_to_delete'。"
+    fi
   else
     echo "未知错误，无法找到容器。"
   fi
