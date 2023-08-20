@@ -3,8 +3,7 @@
 # 删除选定的容器和相关持久化文件夹
 function remove_container() {
   selected_container=$1
-  container_name=$(docker ps --filter "id=$selected_container" --format "{{.Names}}")
-  mounted_folders=$(docker inspect --format '{{ range .Mounts }}{{ .Source }} {{ end }}' $selected_container)
+  mount_points=$(docker inspect --format '{{ range .Mounts }}{{ .Source }} {{ end }}' $selected_container)
 
   if [ -n "$selected_container" ]; then
     echo "正在停止容器 $selected_container ..."
@@ -12,10 +11,19 @@ function remove_container() {
     echo "正在删除容器 $selected_container ..."
     docker rm $selected_container
     echo "容器 $selected_container 已删除。"
-    for folder in $mounted_folders; do
-      echo "正在删除文件夹 '$folder' ..."
-      rm -rf "$folder"
-      echo "文件夹 '$folder' 已删除。"
+
+    for mount_point in $mount_points; do
+      if [ -d "$mount_point" ]; then
+        echo "正在删除文件夹 '$mount_point' ..."
+        sudo rm -rf "$mount_point"
+        if [ $? -eq 0 ]; then
+          echo "文件夹 '$mount_point' 已删除。"
+        else
+          echo "删除文件夹 '$mount_point' 失败。"
+        fi
+      else
+        echo "未找到文件夹 '$mount_point'。"
+      fi
     done
   else
     echo "未知错误，无法找到容器。"
@@ -42,21 +50,12 @@ function list_containers() {
       container_map[$i]=$id
       i=$((i+1))
     done
-    echo "$i. 删除所有容器"
-    container_map[$i]="all"
-    i=$((i+1))
     echo "$i. 退出脚本"
     container_map[$i]="exit"
     read -p "输入选择（输入数字）： " choice
 
     if [[ $choice =~ ^[0-9]+$ ]] && [ $choice -ge 1 ] && [ $choice -le $i ]; then
-      if [ "${container_map[$choice]}" == "all" ]; then
-        for key in ${!container_map[@]}; do
-          if [ "${container_map[$key]}" != "all" ] && [ "${container_map[$key]}" != "exit" ]; then
-            remove_container ${container_map[$key]}
-          fi
-        done
-      elif [ "${container_map[$choice]}" == "exit" ]; then
+      if [ "${container_map[$choice]}" == "exit" ]; then
         exit 0
       else
         remove_container ${container_map[$choice]}
