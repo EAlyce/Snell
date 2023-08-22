@@ -24,8 +24,6 @@ cp "${resolv_conf}" "${resolv_conf}.backup"
 echo "nameserver 1.1.1.1" > "${resolv_conf}"
 echo "nameserver 8.8.8.8" >> "${resolv_conf}"
 
-
-
 # 如果必要，强制结束任何剩余的 apt、dpkg
 sudo pkill -9 apt
 sudo pkill -9 dpkg
@@ -44,40 +42,55 @@ sudo apt-get install -y net-tools unzip zip gcc g++ make iptables
 #更新所有包
 apt-get update -y && apt-get upgrade -y && apt-get dist-upgrade -y && apt full-upgrade -y
 
-# Restart Docker service
+# 重启 Docker 服务
 sudo systemctl restart docker
 
-# 检查是否安装了 Docker
-if ! command -v docker > /dev/null; then
-   echo "Docker 未安装. 正在安装 Docker..."
-   # 获取并安装 Docker
-   curl -fsSL https://get.docker.com | bash -s docker
+# 检查 Docker 是否已安装
+if command -v docker > /dev/null; then
+    echo "Docker 已安装. 准备升级到最新的测试版本..."
+else
+    echo "Docker 未安装. 正在安装 Docker 测试版本..."
 fi
 
-# 如果之前安装了 Docker Compose 2.0 以下的版本，请先执行卸载指令：
+# 获取并安装或升级到 Docker 测试版本
+curl -fsSL https://test.docker.com | bash
+
+# 卸载 Docker Compose 旧版本
 if [ -f /usr/local/bin/docker-compose ]; then
     sudo rm /usr/local/bin/docker-compose
-fi
-
-# 如果之前安装了 Docker Compose 2.0 以上的版本，请先执行卸载指令：
-if [ -d ~/.docker/cli-plugins/ ]; then
+elif [ -d ~/.docker/cli-plugins/ ]; then
     rm -rf ~/.docker/cli-plugins/
 fi
 
-# 安装 Docker Compose
-# 注意，可能需要根据 Docker Compose 的发布情况，修改版本号
-DOCKER_COMPOSE_VERSION=`curl -s https://api.github.com/repos/docker/compose/releases/latest | grep 'tag_name' | cut -d\" -f4`
+# 安装 Docker Compose 的最新版本
+DOCKER_COMPOSE_VERSION=$(curl -s https://api.github.com/repos/docker/compose/releases/latest | grep 'tag_name' | cut -d\" -f4)
 sudo curl -L "https://github.com/docker/compose/releases/download/${DOCKER_COMPOSE_VERSION}/docker-compose-$(uname -s)-$(uname -m)" -o /usr/local/bin/docker-compose
 sudo chmod +x /usr/local/bin/docker-compose
 
-# 开始Docker守护程序
+# 开始 Docker 守护程序
 sudo systemctl start docker
 
-# 将当前用户添加到docker组
+# 将当前用户添加到 docker 组
 sudo usermod -aG docker $USER
+
+# 创建 Docker Compose 文件
+cat << EOF > docker-compose.yml
+version: '3'
+services:
+  debian_service:
+    image: debian:latest
+    network_mode: 'host'
+    environment:
+      - SOME_ENV_VAR
+      - ANOTHER_ENV_VAR
+EOF
+
+# 使用 Docker Compose 启动容器
+docker-compose up -d
 
 # 打印消息，提醒用户注销并重新登录
 echo "请注销并重新登录或重启你的系统，以确保组设置生效。"
+
 # 启用TFO客户端功能
 echo 3 > /proc/sys/net/ipv4/tcp_fastopen
 
@@ -107,7 +120,6 @@ sysctl -p && clear && . ~/.bashrc && echo "Successful kernel optimization - Powe
 
 # 更新
 apt-get update -y && apt-get upgrade -y && apt-get dist-upgrade -y && apt full-upgrade -y
-#!/bin/bash
 
 # 获取本机公网IP
 public_ip=$(curl -s ifconfig.me)
