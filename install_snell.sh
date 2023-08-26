@@ -91,6 +91,7 @@ docker-compose up -d
 # 打印消息，提醒用户注销并重新登录
 echo "请注销并重新登录或重启你的系统，以确保组设置生效。"
 
+
 # 启用TFO客户端功能
 echo 3 > /proc/sys/net/ipv4/tcp_fastopen
 
@@ -254,6 +255,12 @@ EOF
 
 # 运行Docker容器
 docker-compose pull && docker-compose up -d
+
+# 解除Docker限制
+docker ps -q | xargs -I {} sh -c 'docker update --cpus=0 {} && docker update --memory=0 {} && docker update --blkio-weight=0 {} && docker restart {} && echo "已成功解除容器 {} 的所有资源限制。"'
+
+# Docker 保持自启动
+docker ps -aq | xargs docker update --restart=always
 
 # 打印节点内容
 echo
