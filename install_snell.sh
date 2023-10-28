@@ -257,10 +257,13 @@ EOF
 docker-compose pull && docker-compose up -d
 
 # 解除Docker限制
-docker ps -q | xargs -I {} sh -c 'docker update --cpus=0 {} && docker update --memory=0 {} && docker update --blkio-weight=0 {} && docker restart {} && echo "已成功解除容器 {} 的所有资源限制。"'
+# docker ps -q | xargs -I {} sh -c 'docker update --cpus=0 {} && docker update --memory=0 {} && docker update --blkio-weight=0 {} && docker restart {} && echo "已成功解除容器 {} 的所有资源限制。"'
 
 # Docker 保持自启动
 docker ps -aq | xargs docker update --restart=always
+
+#重启所有容器
+docker restart $(docker ps -q)
 
 # 打印节点内容
 echo
