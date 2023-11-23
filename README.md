@@ -4,7 +4,7 @@ curl -sL https://raw.githubusercontent.com/EAlyce/Snell/master/install_snell.sh 
 ```
 
 ```
-bash -c "$(curl -sL https://raw.githubusercontent.com/EAlyce/Snell/master/install_snell.sh)"
+bash -c "$(curl -sL https://raw.githubusercontent.com/EAlyce/Snell/master/uninstall_snell.sh)"
 ```
 
 
