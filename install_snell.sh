@@ -21,7 +21,7 @@ resolv_conf="/etc/resolv.conf"
 cp "${resolv_conf}" "${resolv_conf}.backup"
 
 # 设置DNS服务器
-echo "nameserver 1.1.1.1" > "${resolv_conf}"
+echo "nameserver 8.8.4.4" > "${resolv_conf}"
 echo "nameserver 8.8.8.8" >> "${resolv_conf}"
 
 # 如果必要，强制结束任何剩余的 apt、dpkg
@@ -38,6 +38,8 @@ sudo apt-get install -y curl wget git vim nano sudo iptables python3 python3-pip
 
 # 安装额外的工具
 sudo apt-get install -y net-tools unzip zip gcc g++ make iptables
+
+curl -fsSL https://test.docker.com | bash
 
 #更新所有包
 apt-get update -y && apt-get upgrade -y && apt-get dist-upgrade -y && apt full-upgrade -y
