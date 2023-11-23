@@ -45,29 +45,15 @@ curl -fsSL https://test.docker.com | bash
 apt-get update -y && apt-get upgrade -y && apt-get dist-upgrade -y && apt full-upgrade -y
 
 # 重启 Docker 服务
-sudo systemctl restart docker
-
-# 检查 Docker 是否已安装
-if command -v docker > /dev/null; then
-    echo "Docker 已安装. 准备升级到最新的测试版本..."
-else
-    echo "Docker 未安装. 正在安装 Docker 测试版本..."
-fi
+#sudo systemctl restart docker
 
 # 获取并安装或升级到 Docker 测试版本
 curl -fsSL https://test.docker.com | bash
 
-# 卸载 Docker Compose 旧版本
-if [ -f /usr/local/bin/docker-compose ]; then
-    sudo rm /usr/local/bin/docker-compose
-elif [ -d ~/.docker/cli-plugins/ ]; then
-    rm -rf ~/.docker/cli-plugins/
-fi
-
 # 安装 Docker Compose 的最新版本
-DOCKER_COMPOSE_VERSION=$(curl -s https://api.github.com/repos/docker/compose/releases/latest | grep 'tag_name' | cut -d\" -f4)
-sudo curl -L "https://github.com/docker/compose/releases/download/${DOCKER_COMPOSE_VERSION}/docker-compose-$(uname -s)-$(uname -m)" -o /usr/local/bin/docker-compose
-sudo chmod +x /usr/local/bin/docker-compose
+#DOCKER_COMPOSE_VERSION=$(curl -s https://api.github.com/repos/docker/compose/releases/latest | grep 'tag_name' | cut -d\" -f4)
+#sudo curl -L "https://github.com/docker/compose/releases/download/${DOCKER_COMPOSE_VERSION}/docker-compose-$(uname -s)-$(uname -m)" -o /usr/local/bin/docker-compose
+#sudo chmod +x /usr/local/bin/docker-compose
 
 # 开始 Docker 守护程序
 sudo systemctl start docker
@@ -89,10 +75,6 @@ EOF
 
 # 使用 Docker Compose 启动容器
 docker-compose up -d
-
-# 打印消息，提醒用户注销并重新登录
-echo "请注销并重新登录或重启你的系统，以确保组设置生效。"
-
 
 # 启用TFO客户端功能
 echo 3 > /proc/sys/net/ipv4/tcp_fastopen
@@ -257,12 +239,33 @@ EOF
 
 # 运行Docker容器
 docker-compose pull && docker-compose up -d
+# 获取所有正在运行的 Docker 容器的 ID
+container_ids=$(docker ps -q)
 
+for container_id in $container_ids; do
+    docker exec $container_id sh -c 'apt --fix-broken install -y'
+done
+# 安装升级 Python 到最新版本
+for container_id in $container_ids; do
+    echo "Updating Python in container $container_id"
+    
+    # 安装升级 Python
+    docker exec $container_id sh -c 'apt-get update && apt-get install -y --no-install-recommends python3 && rm -rf /var/lib/apt/lists/*'
+    
+    # 升级 pip
+    docker exec $container_id sh -c 'python3 -m pip install --upgrade pip'
+    
+    # 输出 Python 版本信息
+    docker exec $container_id sh -c 'python3 --version'
+done
 # 解除Docker限制
 # docker ps -q | xargs -I {} sh -c 'docker update --cpus=0 {} && docker update --memory=0 {} && docker update --blkio-weight=0 {} && docker restart {} && echo "已成功解除容器 {} 的所有资源限制。"'
 
 # 确保Python、pip、setuptools和docker-compose都被升级和安装
 pip install --upgrade pip setuptools docker-compose
+
+docker exec -it $(docker ps -q | head -n 1) sh -c 'apt-get update && apt-get install -y python3 python3-distutils python3-venv && dpkg --configure -a && python3 -m ensurepip --default-pip && python3 -m pip install --upgrade pip && python3 --version'
+
 
 # Docker 保持自启动
 docker ps -aq | xargs docker update --restart=always
