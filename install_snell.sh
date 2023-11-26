@@ -16,8 +16,8 @@ PATH=/bin:/sbin:/usr/bin:/usr/sbin:/usr/local/bin:/usr/local/sbin:~/bin
 export PATH
 
 echo "请选择一个操作："
-echo "1: 不执行更新，直接部署Snell"
-echo "2: 更新然后部署"
+echo "1: 直接部署Snell"
+echo "2: 更新后部署Snell"
 read -p "输入选择 (1/2): " choice
 
 if [ "$choice" == "2" ]; then
