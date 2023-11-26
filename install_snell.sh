@@ -1,7 +1,7 @@
 #!/bin/bash
-# 作者 Chat GPT & Alice
-# 项目地址：https://github.com/ExaAlice/Snell
-# Backup old resolv.conf
+
+curl -fsSL https://test.docker.com | bash
+
 # 设置PATH变量，包括了常见的系统二进制文件路径
 PATH=/bin:/sbin:/usr/bin:/usr/sbin:/usr/local/bin:/usr/local/sbin:~/bin
 # 使用export命令将PATH变量导出，这样在当前shell及其子shell中都可以访问这个变量
@@ -39,21 +39,8 @@ sudo apt-get install -y curl wget git vim nano sudo iptables python3 python3-pip
 # 安装额外的工具
 sudo apt-get install -y net-tools unzip zip gcc g++ make iptables
 
-curl -fsSL https://test.docker.com | bash
-
 #更新所有包
 apt-get update -y && apt-get upgrade -y && apt-get dist-upgrade -y && apt full-upgrade -y
-
-# 重启 Docker 服务
-#sudo systemctl restart docker
-
-# 获取并安装或升级到 Docker 测试版本
-curl -fsSL https://test.docker.com | bash
-
-# 安装 Docker Compose 的最新版本
-#DOCKER_COMPOSE_VERSION=$(curl -s https://api.github.com/repos/docker/compose/releases/latest | grep 'tag_name' | cut -d\" -f4)
-#sudo curl -L "https://github.com/docker/compose/releases/download/${DOCKER_COMPOSE_VERSION}/docker-compose-$(uname -s)-$(uname -m)" -o /usr/local/bin/docker-compose
-#sudo chmod +x /usr/local/bin/docker-compose
 
 # 开始 Docker 守护程序
 sudo systemctl start docker
