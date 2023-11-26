@@ -140,7 +140,7 @@ BASE_URL=""
 SUB_PATH=""
 
 case $choice in
-  1) BASE_URL="https://github.com/xOS/Others/raw/master/snell"; SUB_PATH="v3.0.1/snell-server-v3.0.1"; VERSION_NUMBER="3" ;;
+  1) BASE_URL="https://github.com/EAlyce/Snell/tree/master/snell"; SUB_PATH="v3.0.1/snell-server-v3.0.1"; VERSION_NUMBER="3" ;;
   2) BASE_URL="https://dl.nssurge.com/snell"; SUB_PATH="snell-server-v4.0.1"; VERSION_NUMBER="4" ;;
   *) echo "无效选择"; exit 1 ;;
 esac
