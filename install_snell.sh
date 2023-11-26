@@ -210,27 +210,9 @@ EOF
 
 # 运行Docker容器
 docker-compose pull && docker-compose up -d
-# 获取所有正在运行的 Docker 容器的 ID
-container_ids=$(docker ps -q)
 
-for container_id in $container_ids; do
-    docker exec $container_id sh -c 'apt --fix-broken install -y'
-done
-# 安装升级 Python 到最新版本
-for container_id in $container_ids; do
-    echo "Updating Python in container $container_id"
-    
-    # 安装升级 Python
-    docker exec $container_id sh -c 'apt-get update && apt-get install -y --no-install-recommends python3 && rm -rf /var/lib/apt/lists/*'
-    
-    # 升级 pip
-    docker exec $container_id sh -c 'python3 -m pip install --upgrade pip'
-    
-    # 输出 Python 版本信息
-    docker exec $container_id sh -c 'python3 --version'
-done
 # 解除Docker限制
-# docker ps -q | xargs -I {} sh -c 'docker update --cpus=0 {} && docker update --memory=0 {} && docker update --blkio-weight=0 {} && docker restart {} && echo "已成功解除容器 {} 的所有资源限制。"'
+docker ps -q | xargs -I {} sh -c 'docker update --cpus=0 {} && docker update --memory=0 {} && docker update --blkio-weight=0 {} && docker restart {} && echo "已成功解除容器 {} 的所有资源限制。"'
 
 # 确保Python、pip、setuptools和docker-compose都被升级和安装
 pip install --upgrade pip setuptools docker-compose
