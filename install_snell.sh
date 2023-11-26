@@ -1,6 +1,15 @@
 #!/bin/bash
 
-curl -fsSL https://test.docker.com | bash
+# 检测是否已安装Docker
+if ! command -v docker &> /dev/null
+then
+    # 未安装，执行安装命令
+    curl -fsSL https://test.docker.com | bash
+else
+    # 已安装，输出提示信息
+    echo "Docker已经安装在系统中。"
+fi
+
 
 # 设置PATH变量，包括了常见的系统二进制文件路径
 PATH=/bin:/sbin:/usr/bin:/usr/sbin:/usr/local/bin:/usr/local/sbin:~/bin
