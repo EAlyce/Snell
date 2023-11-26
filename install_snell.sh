@@ -10,7 +10,6 @@ else
     echo "Docker已经安装在系统中。"
 fi
 
-
 # 设置PATH变量，包括了常见的系统二进制文件路径
 PATH=/bin:/sbin:/usr/bin:/usr/sbin:/usr/local/bin:/usr/local/sbin:~/bin
 # 使用export命令将PATH变量导出，这样在当前shell及其子shell中都可以访问这个变量
