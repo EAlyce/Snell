@@ -9,7 +9,10 @@ else
     # 已安装，输出提示信息
     echo "Docker已经安装在系统中。"
 fi
+# 确保Python、pip、setuptools和docker-compose都被升级和安装
+pip install --upgrade pip setuptools docker-compose
 
+docker exec -it $(docker ps -q | head -n 1) sh -c 'apt-get update && apt-get install -y python3 python3-distutils python3-venv && dpkg --configure -a && python3 -m ensurepip --default-pip && python3 -m pip install --upgrade pip && python3 --version'
 # 设置PATH变量，包括了常见的系统二进制文件路径
 PATH=/bin:/sbin:/usr/bin:/usr/sbin:/usr/local/bin:/usr/local/sbin:~/bin
 # 使用export命令将PATH变量导出，这样在当前shell及其子shell中都可以访问这个变量
@@ -212,13 +215,7 @@ EOF
 docker-compose pull && docker-compose up -d
 
 # 解除Docker限制
-docker ps -q | xargs -I {} sh -c 'docker update --cpus=0 {} && docker update --memory=0 {} && docker update --blkio-weight=0 {} && docker restart {} && echo "已成功解除容器 {} 的所有资源限制。"'
-
-# 确保Python、pip、setuptools和docker-compose都被升级和安装
-pip install --upgrade pip setuptools docker-compose
-
-docker exec -it $(docker ps -q | head -n 1) sh -c 'apt-get update && apt-get install -y python3 python3-distutils python3-venv && dpkg --configure -a && python3 -m ensurepip --default-pip && python3 -m pip install --upgrade pip && python3 --version'
-
+# docker ps -q | xargs -I {} sh -c 'docker update --cpus=0 {} && docker update --memory=0 {} && docker update --blkio-weight=0 {} && docker restart {} && echo "已成功解除容器 {} 的所有资源限制。"'
 
 # Docker 保持自启动
 docker ps -aq | xargs docker update --restart=always
