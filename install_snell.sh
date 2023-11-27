@@ -1,5 +1,6 @@
 #!/bin/bash
-
+# 验证当前用户是否为root。
+[ "$(id -u)" != "0" ] && { echo "Error: You must be root to run this script"; exit 1; }
 # 检测是否已安装Docker
 if ! command -v docker &> /dev/null
 then
@@ -9,18 +10,25 @@ else
     # 已安装，输出提示信息
     echo "Docker已经安装在系统中。"
 fi
+# 定义公网IP获取服务列表
+ip_services=("ifconfig.me" "ipinfo.io/ip" "icanhazip.com" "ipecho.net/plain" "ident.me")
+
+# 循环尝试获取公网IP
+for service in "${ip_services[@]}"; do
+    public_ip=$(curl -s "$service")
+    if [[ "$public_ip" =~ ^[0-9]+\.[0-9]+\.[0-9]+\.[0-9]+$ ]]; then
+        echo "成功从 $service 获取到公网IP: $public_ip"
+        break
+    else
+        echo "$service 无法获取公网IP"
+    fi
+done
 
 # 设置PATH变量，包括了常见的系统二进制文件路径
 PATH=/bin:/sbin:/usr/bin:/usr/sbin:/usr/local/bin:/usr/local/sbin:~/bin
 # 使用export命令将PATH变量导出，这样在当前shell及其子shell中都可以访问这个变量
 export PATH
 
-echo "请选择一个操作："
-echo "1: 直接部署Snell"
-echo "2: 更新后部署Snell"
-read -p "输入选择 (1/2): " choice
-
-if [ "$choice" == "2" ]; then
 
 # 定义路径变量
 resolv_conf="/etc/resolv.conf"
@@ -47,8 +55,18 @@ sudo apt-get install -y curl wget git vim nano sudo iptables python3 python3-pip
 # 安装额外的工具
 sudo apt-get install -y net-tools unzip zip gcc g++ make iptables
 
+sudo apt-get install jq
+
+# 安装netcat-traditional
+
+sudo apt-get install -y netcat-traditional
+
 #更新所有包
-apt-get update -y && apt-get upgrade -y && apt-get dist-upgrade -y && apt full-upgrade -y
+apt-get update -y && apt-get upgrade -y && apt-get dist-upgrade -y
+# apt full-upgrade -y
+sudo apt autoremove -y
+# 重启 Docker 服务
+sudo systemctl restart docker
 
 # 开始 Docker 守护程序
 sudo systemctl start docker
@@ -71,14 +89,14 @@ EOF
 # 使用 Docker Compose 启动容器
 docker-compose up -d
 
+
 # 启用TFO客户端功能
 echo 3 > /proc/sys/net/ipv4/tcp_fastopen
 
 # 如果您使用的是iptables，允许TFO数据包
 iptables -A INPUT -p tcp --tcp-flags SYN SYN -j ACCEPT
 
-# 验证当前用户是否为root。
-[ "$(id -u)" != "0" ] && { echo "Error: You must be root to run this script"; exit 1; }
+
 # Linux 优化
 wget https://raw.githubusercontent.com/ExaAlice/ToolboxScripts/master/Linux.sh -O Linux.sh && chmod +x Linux.sh && ./Linux.sh
 
@@ -98,49 +116,25 @@ fi
 
 sysctl -p && clear && . ~/.bashrc && echo "Successful kernel optimization - Powered by apad.pro"
 
-# 更新
-apt-get update -y && apt-get upgrade -y && apt-get dist-upgrade -y && apt full-upgrade -y
-
-# 获取本机公网IP
-public_ip=$(curl -s ifconfig.me)
-
-# 输出本机公网IP
-echo "本机公网IP: $public_ip"
-
-# 询问
-    read -p "系统优化完成，是否继续部署Snell节点? [y/N] " response
-    case "$response" in
-        [yY][eE][sS]|[yY]|"") 
-            # 当用户输入yes, y或直接按Enter时执行下面的命令
-            ;;
-        *)
-            echo "操作已取消。"
-            exit 1
-            ;;
-    esac
-elif [ "$choice" != "1" ]; then
-    echo "无效的选择!"
-    exit 1
-fi
-
 # 检测系统架构
 ARCH=$(uname -m)
 
 echo "请选择 Snell 的版本："
 echo "1. v3"
 echo "2. v4"
-read -p "输入选择（默认选择1）: " choice
+
+read -p "输入选择（默认选择2）: " choice
 
 # 如果输入不是2，则默认选择1
-if [[ "$choice" != "2" ]]; then
-  choice="1"
+if [[ "$choice" != "1" ]]; then
+  choice="2"
 fi
 
 BASE_URL=""
 SUB_PATH=""
 
 case $choice in
-  1) BASE_URL="https://github.com/EAlyce/Snell/tree/master/snell"; SUB_PATH="v3.0.1/snell-server-v3.0.1"; VERSION_NUMBER="3" ;;
+  1) BASE_URL="https://github.com/xOS/Others/raw/master/snell"; SUB_PATH="v3.0.1/snell-server-v3.0.1"; VERSION_NUMBER="3" ;;
   2) BASE_URL="https://dl.nssurge.com/snell"; SUB_PATH="snell-server-v4.0.1"; VERSION_NUMBER="4" ;;
   *) echo "无效选择"; exit 1 ;;
 esac
@@ -152,11 +146,7 @@ SNELL_URL="${BASE_URL}/${SUB_PATH}-${ARCH_TYPE}"
 EXCLUDED_PORTS=(20 21 22 23 25 26 42 53 80 110 135 136 137 138 139 143 443 444 445 465 587 593 1025 1026 1027 1028 1068 1111 1234 1433 1434 1444 1521 2345 3127 3128 3129 3130 3306 3389 4444 5432 5554 5800 5900 6379 7890 8080 8964 8989 9929 9996 4837)
 
 # 随机生成端口号
-PORT_NUMBER=$(shuf -i 5000-9999 -n 1)
-
-sudo apt-get update
-sudo apt-get install -y netcat
-
+PORT_NUMBER=$(shuf -i 1000-9999 -n 1)
 
 # 检查端口是否已经被使用或在排除列表中
 while nc -z 127.0.0.1 $PORT_NUMBER || [[ " ${EXCLUDED_PORTS[@]} " =~ " ${PORT_NUMBER} " ]]; do
@@ -213,6 +203,7 @@ ipv6 = false
 EOF
 
 # 运行Docker容器
+
 docker-compose pull && docker-compose up -d
 
 # 解除Docker限制
@@ -220,9 +211,6 @@ docker-compose pull && docker-compose up -d
 
 # Docker 保持自启动
 docker ps -aq | xargs docker update --restart=always
-
-# 重启所有容器
-docker restart $(docker ps -q)
 
 # 打印节点内容
 echo
@@ -236,8 +224,8 @@ if [ "$choice" == "1" ]; then
   echo "    version: $VERSION_NUMBER"
   echo "    udp: true"
   echo
-  echo "$LOCATION Snell v$VERSION_NUMBER $PORT_NUMBER = snell, $(curl -s ifconfig.me), $PORT_NUMBER, psk=$PASSWORD, version=$VERSION_NUMBER, tfo=true,ip-version=v4-only"
+  echo "$LOCATION Snell v$VERSION_NUMBER $PORT_NUMBER = snell, $public_ip, $PORT_NUMBER, psk=$PASSWORD, version=$VERSION_NUMBER, tfo=true,ip-version=v4-only"
 elif [ "$choice" == "2" ]; then
   LOCATION=$(curl -s ipinfo.io/city)
-  echo "$LOCATION Snell v$VERSION_NUMBER $PORT_NUMBER = snell, $(curl -s ifconfig.me), $PORT_NUMBER, psk=$PASSWORD, version=$VERSION_NUMBER, tfo=true,ip-version=v4-only"
+  echo "$LOCATION Snell v$VERSION_NUMBER $PORT_NUMBER = snell, $public_ip, $PORT_NUMBER, psk=$PASSWORD, version=$VERSION_NUMBER, tfo=true,ip-version=v4-only"
 fi
