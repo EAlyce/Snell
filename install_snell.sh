@@ -29,7 +29,7 @@ resolv_conf="/etc/resolv.conf"
 cp "${resolv_conf}" "${resolv_conf}.backup"
 
 # 设置DNS服务器
-echo "nameserver 1.1.1.1" > "${resolv_conf}"
+echo "nameserver 8.8.4.4" > "${resolv_conf}"
 echo "nameserver 8.8.8.8" >> "${resolv_conf}"
 
 # 如果必要，强制结束任何剩余的 apt、dpkg
