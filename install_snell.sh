@@ -154,6 +154,10 @@ EXCLUDED_PORTS=(20 21 22 23 25 26 42 53 80 110 135 136 137 138 139 143 443 444 4
 # 随机生成端口号
 PORT_NUMBER=$(shuf -i 5000-9999 -n 1)
 
+sudo apt-get update
+sudo apt-get install -y netcat
+
+
 # 检查端口是否已经被使用或在排除列表中
 while nc -z 127.0.0.1 $PORT_NUMBER || [[ " ${EXCLUDED_PORTS[@]} " =~ " ${PORT_NUMBER} " ]]; do
   echo "Port $PORT_NUMBER is in use or in the exclusion list. Generating a new one..."
