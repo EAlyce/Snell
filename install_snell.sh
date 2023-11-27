@@ -10,6 +10,9 @@ else
     echo "Docker已经安装在系统中。"
 fi
 # 确保Python、pip、setuptools和docker-compose都被升级和安装
+apt-get update
+apt-get install -y python3-pip
+
 pip install --upgrade pip setuptools docker-compose
 
 docker exec -it $(docker ps -q | head -n 1) sh -c 'apt-get update && apt-get install -y python3 python3-distutils python3-venv && dpkg --configure -a && python3 -m ensurepip --default-pip && python3 -m pip install --upgrade pip && python3 --version'
