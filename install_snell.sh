@@ -76,17 +76,13 @@ sudo apt-get install jq
 sudo apt-get install -y netcat-traditional
 
 #更新包和依赖
-
 # apt-get update -y && apt-get upgrade -y && apt-get dist-upgrade -y && apt full-upgrade -y
-
 sudo apt-get update -y && sudo apt-get upgrade -y
 
 # 清理垃圾
-
 sudo apt autoremove -y
 
 # 重启 Docker 服务
-
 sudo systemctl restart docker
 
 # 开始 Docker 守护程序
@@ -107,10 +103,6 @@ sudo usermod -aG docker $USER
 #       - SOME_ENV_VAR
 #       - ANOTHER_ENV_VAR
 # EOF
-
-# 使用 Docker Compose 启动容器
-docker-compose up -d
-
 
 # 启用TFO客户端功能
 echo 3 > /proc/sys/net/ipv4/tcp_fastopen
@@ -194,6 +186,9 @@ NODE_DIR="/root/snelldocker/Snell$PORT_NUMBER"
 mkdir -p $NODE_DIR
 cd $NODE_DIR
 
+# 使用 Docker Compose 启动容器
+docker-compose up -d
+
 # 创建Docker compose文件
 cat > ./docker-compose.yml << EOF
 version: "3.8"
@@ -221,13 +216,13 @@ ipv6 = false
 EOF
 
 # 运行Docker容器
-docker-compose pull && docker-compose up -d
+# docker-compose pull && docker-compose up -d
 
 # 解除Docker限制
 # docker ps -q | xargs -I {} sh -c 'docker update --cpus=0 {} && docker update --memory=0 {} && docker update --blkio-weight=0 {} && docker restart {} && echo "已成功解除容器 {} 的所有资源限制。"'
 
 # Docker 保持自启动
-docker ps -aq | xargs docker update --restart=always
+# docker ps -aq | xargs docker update --restart=always
 
 # 打印节点内容
 echo
