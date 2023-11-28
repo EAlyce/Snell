@@ -1,6 +1,18 @@
 #!/bin/bash
 # 验证当前用户是否为root。
 [ "$(id -u)" != "0" ] && { echo "Error: You must be root to run this script"; exit 1; }
+
+# 设置PATH变量，包括了常见的系统二进制文件路径
+PATH=/bin:/sbin:/usr/bin:/usr/sbin:/usr/local/bin:/usr/local/sbin:~/bin
+# 使用export命令将PATH变量导出，这样在当前shell及其子shell中都可以访问这个变量
+export PATH
+
+# 定义路径变量
+resolv_conf="/etc/resolv.conf"
+
+# 备份原文件
+cp "${resolv_conf}" "${resolv_conf}.backup"
+
 # 检测是否已安装Docker
 if ! command -v docker &> /dev/null
 then
@@ -10,6 +22,13 @@ else
     # 已安装，输出提示信息
     echo "Docker已经安装在系统中。"
 fi
+
+# 开始 Docker 守护程序
+sudo systemctl start docker
+
+# 将当前用户添加到 docker 组
+sudo usermod -aG docker $USER
+
 # 定义公网IP获取服务列表
 ip_services=("ifconfig.me" "ipinfo.io/ip" "icanhazip.com" "ipecho.net/plain" "ident.me")
 
@@ -24,18 +43,6 @@ for service in "${ip_services[@]}"; do
     fi
 done
 
-# 设置PATH变量，包括了常见的系统二进制文件路径
-PATH=/bin:/sbin:/usr/bin:/usr/sbin:/usr/local/bin:/usr/local/sbin:~/bin
-# 使用export命令将PATH变量导出，这样在当前shell及其子shell中都可以访问这个变量
-export PATH
-
-
-# 定义路径变量
-resolv_conf="/etc/resolv.conf"
-
-# 备份原文件
-cp "${resolv_conf}" "${resolv_conf}.backup"
-
 # 设置DNS服务器
 echo "nameserver 8.8.4.4" > "${resolv_conf}"
 echo "nameserver 8.8.8.8" >> "${resolv_conf}"
@@ -49,23 +56,37 @@ sudo rm /var/lib/dpkg/lock-frontend
 sudo rm /var/lib/apt/lists/lock
 sudo dpkg --configure -a
 
-# 安装 curl 和其他常用软件
-sudo apt-get install -y curl wget git vim nano sudo iptables python3 python3-pip
+#更新包和依赖
+sudo apt-get update -y && sudo apt-get upgrade -y
+# apt-get update -y && apt-get upgrade -y && apt-get dist-upgrade -y && apt full-upgrade -y
 
-# 安装额外的工具
-sudo apt-get install -y net-tools unzip zip gcc g++ make iptables
+# 安装软件包
+sudo apt-get install -y curl wget git vim nano sudo iptables python3 python3-pip net-tools unzip zip gcc g++ make jq netcat-traditional iptables-persistent
 
+# 清理垃圾
+sudo apt autoremove -y
+
+# 重启 Docker 服务
+# sudo systemctl restart docker
+=======
 sudo apt-get install jq
 
 # 安装netcat-traditional
 
 sudo apt-get install -y netcat-traditional
 
-#更新所有包
-apt-get update -y && apt-get upgrade -y && apt-get dist-upgrade -y
-# apt full-upgrade -y
+#更新包和依赖
+
+# apt-get update -y && apt-get upgrade -y && apt-get dist-upgrade -y && apt full-upgrade -y
+
+sudo apt-get update -y && sudo apt-get upgrade -y
+
+# 清理垃圾
+
 sudo apt autoremove -y
+
 # 重启 Docker 服务
+
 sudo systemctl restart docker
 
 # 开始 Docker 守护程序
@@ -74,17 +95,18 @@ sudo systemctl start docker
 # 将当前用户添加到 docker 组
 sudo usermod -aG docker $USER
 
+>>>>>>> 1856a38338fb90fff2bbd538ceb47a187ba0a127
 # 创建 Docker Compose 文件
-cat << EOF > docker-compose.yml
-version: '3'
-services:
-  debian_service:
-    image: debian:latest
-    network_mode: 'host'
-    environment:
-      - SOME_ENV_VAR
-      - ANOTHER_ENV_VAR
-EOF
+# cat << EOF > docker-compose.yml
+# version: '3'
+# services:
+#   debian_service:
+#     image: debian:latest
+#     network_mode: 'host'
+#     environment:
+#       - SOME_ENV_VAR
+#       - ANOTHER_ENV_VAR
+# EOF
 
 # 使用 Docker Compose 启动容器
 docker-compose up -d
@@ -93,9 +115,8 @@ docker-compose up -d
 # 启用TFO客户端功能
 echo 3 > /proc/sys/net/ipv4/tcp_fastopen
 
-# 如果您使用的是iptables，允许TFO数据包
+# 允许TFO数据包
 iptables -A INPUT -p tcp --tcp-flags SYN SYN -j ACCEPT
-
 
 # Linux 优化
 wget https://raw.githubusercontent.com/ExaAlice/ToolboxScripts/master/Linux.sh -O Linux.sh && chmod +x Linux.sh && ./Linux.sh
@@ -160,9 +181,6 @@ echo "Port $PORT_NUMBER is available."
 echo "iptables-persistent iptables-persistent/autosave_v4 boolean true" | sudo debconf-set-selections
 echo "iptables-persistent iptables-persistent/autosave_v6 boolean true" | sudo debconf-set-selections
 
-# 安装iptables-persistent
-sudo apt-get install -y iptables-persistent
-
 # 强制开放该端口
 sudo iptables -A INPUT -p tcp --dport $PORT_NUMBER -j ACCEPT
 echo "Port $PORT_NUMBER has been opened in iptables."
@@ -203,7 +221,6 @@ ipv6 = false
 EOF
 
 # 运行Docker容器
-
 docker-compose pull && docker-compose up -d
 
 # 解除Docker限制
