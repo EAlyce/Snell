@@ -10,6 +10,9 @@ else
     # 已安装，输出提示信息
     echo "Docker已经安装在系统中。"
 fi
+
+sudo systemctl start docker.service
+
 # 重启 Docker 服务
 sudo systemctl restart docker
 
