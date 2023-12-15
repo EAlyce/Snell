@@ -136,11 +136,34 @@ sudo apt-get upgrade -y
 # 清理垃圾
 sudo apt autoremove -y
 
+clear
+
+function clean_journal {
+  journalctl --rotate
+  journalctl --vacuum-time=1s
+  journalctl --vacuum-size=50M
+}
+
+if [ -f "/etc/debian_version" ]; then
+  # Debian-based systems
+  if command -v apt > /dev/null; then
+    apt autoremove --purge -y || echo "Failed to autoremove packages"
+    apt clean -y || echo "Failed to clean package cache"
+    apt autoclean -y || echo "Failed to autoclean package cache"
+    apt remove --purge $(dpkg -l | awk '/^rc/ {print $2}') -y || echo "Failed to remove packages with rc status"
+    clean_journal
+    apt remove --purge $(dpkg -l | awk '/^ii linux-(image|headers)-[^ ]+/{print $2}' | grep -v $(uname -r | sed 's/-.*//') | xargs) -y || echo "Failed to remove old kernels"
+  else
+    echo "apt command not found"
+  fi
+fi
 # 检查/proc/sys/net/ipv4/tcp_fastopen文件是否存在，如果存在则启用TFO客户端功能
 if [ -f "/proc/sys/net/ipv4/tcp_fastopen" ]; then
     echo 3 | sudo tee /proc/sys/net/ipv4/tcp_fastopen
 fi
 
+docker system prune -af --volumes
+echo "清理完成"
 # 如果您使用的是iptables，允许TFO数据包
 sudo iptables -A INPUT -p tcp --tcp-flags SYN SYN -j ACCEPT
 
