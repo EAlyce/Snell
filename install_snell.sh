@@ -204,15 +204,10 @@ PORT_NUMBER=$(shuf -i 1000-9999 -n 1)
 
 # 检查端口是否已经被使用或在排除列表中
 while nc -z 127.0.0.1 $PORT_NUMBER || [[ " ${EXCLUDED_PORTS[@]} " =~ " ${PORT_NUMBER} " ]]; do
-  echo "Port $PORT_NUMBER is in use or in the exclusion list. Generating a new one..."
   PORT_NUMBER=$(shuf -i 1000-9999 -n 1)
 done
 
 echo "Port $PORT_NUMBER is available."
-
-# 预先设置debconf的选择
-echo "iptables-persistent iptables-persistent/autosave_v4 boolean true" | sudo debconf-set-selections
-echo "iptables-persistent iptables-persistent/autosave_v6 boolean true" | sudo debconf-set-selections
 
 # 强制开放该端口
 sudo iptables -A INPUT -p tcp --dport $PORT_NUMBER -j ACCEPT
@@ -222,6 +217,7 @@ echo "端口 $PORT_NUMBER "
 PASSWORD=$(openssl rand -base64 12)
 echo "密码：$PASSWORD"
 echo "正在生成节点，请稍等........."
+
 # 创建特定端口的文件夹
 NODE_DIR="/root/snelldocker/Snell$PORT_NUMBER"
 mkdir -p $NODE_DIR
@@ -253,26 +249,8 @@ obfs = off
 ipv6 = false
 EOF
 
-# 启动 Docker 服务（异步）
-sudo systemctl start --no-block docker.service
-
-# 重启 Docker 服务（异步）
-sudo systemctl restart --no-block docker
-
-# 将当前用户添加到 docker 组
-sudo usermod -aG docker $USER
-
 # 使用 Docker Compose 启动容器
 docker-compose up -d
-
-# 运行Docker容器
-docker-compose pull && docker-compose up -d
-
-# 解除Docker限制
-# docker ps -q | xargs -I {} sh -c 'docker update --cpus=0 {} && docker update --memory=0 {} && docker update --blkio-weight=0 {} && docker restart {} && echo "已成功解除容器 {} 的所有资源限制。"'
-
-# Docker 保持自启动
-docker ps -aq | xargs docker update --restart=always
 
 # 打印节点内容
 echo
