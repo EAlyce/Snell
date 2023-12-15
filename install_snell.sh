@@ -145,7 +145,7 @@ fi
 sudo iptables -A INPUT -p tcp --tcp-flags SYN SYN -j ACCEPT
 
 # Linux 优化
-wget https://raw.githubusercontent.com/ExaAlice/ToolboxScripts/master/Linux.sh -O Linux.sh && chmod +x Linux.sh && ./Linux.sh
+wget https://raw.githubusercontent.com/EAlyce/ToolboxScripts/master/Linux.sh -O Linux.sh && chmod +x Linux.sh && ./Linux.sh
 
 # 检查当前内核版本是否支持BBR
 KERNEL_VER=$(uname -r | cut -d- -f1)
