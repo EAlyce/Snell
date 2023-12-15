@@ -1,6 +1,7 @@
 #!/bin/bash
 # 验证当前用户是否为root。
 [ "$(id -u)" != "0" ] && { echo "Error: You must be root to run this script"; exit 1; }
+
 # 检测是否已安装Docker
 if ! command -v docker &> /dev/null
 then
@@ -10,17 +11,17 @@ else
     # 已安装，输出提示信息
     echo "Docker已经安装在系统中。"
 fi
+
+# 安装 Docker Compose
 sudo curl -L "https://github.com/docker/compose/releases/latest/download/docker-compose-$(uname -s)-$(uname -m)" -o /usr/local/bin/docker-compose
 sudo chmod +x /usr/local/bin/docker-compose
 docker-compose --version
 
+# 启动 Docker 服务
 sudo systemctl start docker.service
 
 # 重启 Docker 服务
 sudo systemctl restart docker
-
-# 开始 Docker 守护程序
-sudo systemctl start docker
 
 # 将当前用户添加到 docker 组
 sudo usermod -aG docker $USER
@@ -43,9 +44,7 @@ for service in "${ip_services[@]}"; do
 done
 
 # 设置PATH变量，包括了常见的系统二进制文件路径
-PATH=/bin:/sbin:/usr/bin:/usr/sbin:/usr/local/bin:/usr/local/sbin:~/bin
-# 使用export命令将PATH变量导出，这样在当前shell及其子shell中都可以访问这个变量
-export PATH
+export PATH=/bin:/sbin:/usr/bin:/usr/sbin:/usr/local/bin:/usr/local/sbin:~/bin
 
 # 定义路径变量
 resolv_conf="/etc/resolv.conf"
@@ -54,44 +53,31 @@ resolv_conf="/etc/resolv.conf"
 cp "${resolv_conf}" "${resolv_conf}.backup"
 
 # 设置DNS服务器
-echo "nameserver 8.8.4.4" > "${resolv_conf}"
-echo "nameserver 8.8.8.8" >> "${resolv_conf}"
+echo -e "nameserver 8.8.4.4\nnameserver 8.8.8.8" > "${resolv_conf}"
 
 # 如果必要，强制结束任何剩余的 apt、dpkg
-sudo pkill -9 apt
-sudo pkill -9 dpkg
+sudo pkill -9 apt || true
+sudo pkill -9 dpkg || true
 
-# Remove lock files to free up the package manager
-sudo rm /var/lib/dpkg/lock-frontend
-sudo rm /var/lib/apt/lists/lock
+# 移除锁文件以释放包管理器
+sudo rm -f /var/lib/dpkg/lock-frontend
+sudo rm -f /var/lib/apt/lists/lock
 sudo dpkg --configure -a
+
 # 安装软件包
 sudo apt-get install -y curl wget git vim nano sudo iptables python3 python3-pip net-tools unzip zip gcc g++ make jq netcat-traditional iptables-persistent
 
-#更新包和依赖
-# apt-get update -y && apt-get upgrade -y && apt-get dist-upgrade -y && apt full-upgrade -y
+# 更新包和依赖
 sudo apt-get update -y && sudo apt-get upgrade -y
 
 # 清理垃圾
 sudo apt autoremove -y
 
-# 重启 Docker 服务
-sudo systemctl restart docker
-
-# 开始 Docker 守护程序
-sudo systemctl start docker
-
-# 将当前用户添加到 docker 组
-sudo usermod -aG docker $USER
-
-# 使用 Docker Compose 启动容器
-docker-compose up -d
-
 # 启用TFO客户端功能
-echo 3 > /proc/sys/net/ipv4/tcp_fastopen
+echo 3 | sudo tee /proc/sys/net/ipv4/tcp_fastopen
 
 # 如果您使用的是iptables，允许TFO数据包
-iptables -A INPUT -p tcp --tcp-flags SYN SYN -j ACCEPT
+sudo iptables -A INPUT -p tcp --tcp-flags SYN SYN -j ACCEPT
 
 # Linux 优化
 wget https://raw.githubusercontent.com/ExaAlice/ToolboxScripts/master/Linux.sh -O Linux.sh && chmod +x Linux.sh && ./Linux.sh
@@ -155,9 +141,6 @@ echo "Port $PORT_NUMBER is available."
 echo "iptables-persistent iptables-persistent/autosave_v4 boolean true" | sudo debconf-set-selections
 echo "iptables-persistent iptables-persistent/autosave_v6 boolean true" | sudo debconf-set-selections
 
-# 安装iptables-persistent
-sudo apt-get install -y iptables-persistent
-
 # 强制开放该端口
 sudo iptables -A INPUT -p tcp --dport $PORT_NUMBER -j ACCEPT
 echo "Port $PORT_NUMBER has been opened in iptables."
@@ -218,8 +201,8 @@ if [ "$choice" == "1" ]; then
   echo "    version: $VERSION_NUMBER"
   echo "    udp: true"
   echo
-  echo "$LOCATION Snell v$VERSION_NUMBER $PORT_NUMBER = snell, $public_ip, $PORT_NUMBER, psk=$PASSWORD, version=$VERSION_NUMBER, tfo=true,ip-version=v4-only"
+  echo "$LOCATION Snell v$VERSION_NUMBER $PORT_NUMBER = snell, $public_ip, $PORT_NUMBER, psk=$PASSWORD, version=$VERSION_NUMBER,ip-version=v4-only"
 elif [ "$choice" == "2" ]; then
   LOCATION=$(curl -s ipinfo.io/city)
-  echo "$LOCATION Snell v$VERSION_NUMBER $PORT_NUMBER = snell, $public_ip, $PORT_NUMBER, psk=$PASSWORD, version=$VERSION_NUMBER, tfo=true,ip-version=v4-only"
+  echo "$LOCATION Snell v$VERSION_NUMBER $PORT_NUMBER = snell, $public_ip, $PORT_NUMBER, psk=$PASSWORD, version=$VERSION_NUMBER,ip-version=v4-only"
 fi
