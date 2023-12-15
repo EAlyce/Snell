@@ -170,7 +170,6 @@ if sysctl -p; then
 else
     echo "应用系统参数更改失败。"
 fi
-
 # 检测系统架构
 ARCH=$(uname -m)
 
