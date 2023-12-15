@@ -1,16 +1,4 @@
 #!/bin/bash
-# 定义一个函数来改变echo输出的颜色
-echo_green() {
-    echo -e "\e[92m$1\e[0m"
-}
-echo_error() {
-    echo -e "\e[91mERROR: $1\e[0m"
-}
-
-# 定义一个函数来改变警告信息的颜色
-echo_warning() {
-    echo -e "\e[91mWARNING: $1\e[0m"
-}
 # 验证当前用户是否为root。
 [ "$(id -u)" != "0" ] && { echo "Error: You must be root to run this script"; exit 1; }
 
@@ -28,18 +16,6 @@ fi
 sudo curl -L "https://github.com/docker/compose/releases/latest/download/docker-compose-$(uname -s)-$(uname -m)" -o /usr/local/bin/docker-compose
 sudo chmod +x /usr/local/bin/docker-compose
 docker-compose --version
-
-# 启动 Docker 服务
-sudo systemctl start docker.service
-
-# 重启 Docker 服务
-sudo systemctl restart docker
-
-# 将当前用户添加到 docker 组
-sudo usermod -aG docker $USER
-
-# 使用 Docker Compose 启动容器
-docker-compose up -d
 
 # 定义公网IP获取服务列表
 ip_services=("ifconfig.me" "ipinfo.io/ip" "icanhazip.com" "ipecho.net/plain" "ident.me")
@@ -191,6 +167,18 @@ tfo = true
 obfs = off
 ipv6 = false
 EOF
+
+# 启动 Docker 服务
+sudo systemctl start docker.service
+
+# 重启 Docker 服务
+sudo systemctl restart docker
+
+# 将当前用户添加到 docker 组
+sudo usermod -aG docker $USER
+
+# 使用 Docker Compose 启动容器
+docker-compose up -d
 
 # 运行Docker容器
 docker-compose pull && docker-compose up -d
