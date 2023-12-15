@@ -1,4 +1,16 @@
 #!/bin/bash
+# 定义一个函数来改变echo输出的颜色
+echo_green() {
+    echo -e "\e[92m$1\e[0m"
+}
+echo_error() {
+    echo -e "\e[91mERROR: $1\e[0m"
+}
+
+# 定义一个函数来改变警告信息的颜色
+echo_warning() {
+    echo -e "\e[91mWARNING: $1\e[0m"
+}
 # 验证当前用户是否为root。
 [ "$(id -u)" != "0" ] && { echo "Error: You must be root to run this script"; exit 1; }
 
@@ -143,11 +155,11 @@ echo "iptables-persistent iptables-persistent/autosave_v6 boolean true" | sudo d
 
 # 强制开放该端口
 sudo iptables -A INPUT -p tcp --dport $PORT_NUMBER -j ACCEPT
-echo "Port $PORT_NUMBER has been opened in iptables."
+echo "端口 $PORT_NUMBER 已在iptables中打开。"
 
 # 生成随机密码
-PASSWORD=$(cat /dev/urandom | tr -dc 'A-Za-z0-9' | head -c 18)
-echo $PASSWORD
+PASSWORD=$(tr -dc 'A-Za-z0-9' < /dev/urandom | head -c 18)
+echo "生成的密码是：$PASSWORD"
 
 # 创建特定端口的文件夹
 NODE_DIR="/root/snelldocker/Snell$PORT_NUMBER"
