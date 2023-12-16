@@ -78,8 +78,9 @@ echo -e "[global]\nbreak-system-packages = true" | sudo tee /etc/pip.conf
 # 更新包和依赖
 sudo apt-get upgrade -y && sudo apt-get dist-upgrade -y
 #更新pip
-pip3 list --outdated | awk 'NR>2 {print $1}' | xargs -n1 pip3 install -U
 echo "更新中请稍后......"
+pip3 list --outdated | awk 'NR>2 {print $1}' | xargs -n1 pip3 install -U
+
 # 清理垃圾并更新python3
 sudo apt-get autoremove -y && sudo apt-get install only-upgrade python3 -y
 
