@@ -3,6 +3,15 @@
 # 验证当前用户是否为root。
 [ "$(id -u)" != "0" ] && echo "Error: You must be root to run this script" && exit 1
 
+# 如果必要，强制结束任何剩余的 apt、dpkg
+sudo pkill -9 apt || true
+sudo pkill -9 dpkg || true
+
+# 检查锁文件是否存在，如果存在则移除它们
+sudo rm -f /var/lib/dpkg/lock-frontend /var/lib/apt/lists/lock
+
+# 配置未配置的包
+sudo dpkg --configure -a
 sudo apt-get install -y curl wget
 
 # 检测是否已安装Docker
@@ -59,16 +68,6 @@ done
 [ -n "$LOCATION" ] || echo "无法获取城市名。"
 
 echo -e "nameserver 8.8.4.4\nnameserver 8.8.8.8" | sudo tee /etc/resolv.conf
-
-# 如果必要，强制结束任何剩余的 apt、dpkg
-sudo pkill -9 apt || true
-sudo pkill -9 dpkg || true
-
-# 检查锁文件是否存在，如果存在则移除它们
-sudo rm -f /var/lib/dpkg/lock-frontend /var/lib/apt/lists/lock
-
-# 配置未配置的包
-sudo dpkg --configure -a
 
 # 更新包列表并安装软件包
 sudo apt-get update -y && sudo apt-get install -y curl wget git vim nano sudo iptables python3 python3-pip net-tools unzip zip gcc g++ make jq netcat-traditional iptables-persistent
