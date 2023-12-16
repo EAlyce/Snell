@@ -90,23 +90,6 @@ else
     echo "主机位置：$LOCATION"
 fi
 
-# 设置PATH变量，包括了常见的系统二进制文件路径
-export PATH=/bin:/sbin:/usr/bin:/usr/sbin:/usr/local/bin:/usr/local/sbin:~/bin
-
-# 定义路径变量
-resolv_conf="/etc/resolv.conf"
-
-# 检查原文件是否存在，如果不存在则创建一个新的空文件
-if [ ! -f "${resolv_conf}" ]; then
-    echo "文件 ${resolv_conf} 不存在，正在创建新文件。"
-    touch "${resolv_conf}"
-fi
-
-# 如果备份文件已经存在，直接覆盖它
-if [ -f "${resolv_conf}.backup" ]; then
-    cp -v "${resolv_conf}" "${resolv_conf}.backup"
-fi
-
 echo -e "nameserver 8.8.4.4\nnameserver 8.8.8.8" | sudo tee /etc/resolv.conf
 
 # 如果必要，强制结束任何剩余的 apt、dpkg
@@ -129,9 +112,11 @@ sudo apt-get update -y
 
 # 安装软件包
 sudo apt-get install -y curl wget git vim nano sudo iptables python3 python3-pip net-tools unzip zip gcc g++ make jq netcat-traditional iptables-persistent
-
+echo -e "[global]\nbreak-system-packages = true" | sudo tee /etc/pip.conf
 # 更新包和依赖
 sudo apt-get upgrade -y
+pip3 list --outdated | awk 'NR>2 {print $1}' | xargs -n1 pip3 install -U
+sudo apt-get update -y && sudo apt-get upgrade -y && sudo apt-get dist-upgrade -y && sudo apt-get autoremove -y && sudo apt-get install only-upgrade python3 -y
 
 # 清理垃圾
 sudo apt autoremove -y
