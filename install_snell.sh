@@ -1,5 +1,8 @@
 #!/bin/bash
 
+sudo -i
+
+cd /root
 # 验证当前用户是否为root。
 [ "$(id -u)" != "0" ] && echo "Error: You must be root to run this script" && exit 1
 
