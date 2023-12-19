@@ -1,7 +1,7 @@
 #!/bin/bash
 # 验证当前用户是否为root。
 [ "$(id -u)" != "0" ] && echo "Error: You must be root to run this script" && exit 1
-
+sudo apt-get install -y curl wget
 # 如果必要，强制结束任何剩余的 apt、dpkg
 sudo pkill -9 apt || true
 sudo pkill -9 dpkg || true
@@ -69,43 +69,12 @@ done
 echo -e "nameserver 8.8.4.4\nnameserver 8.8.8.8" | sudo tee /etc/resolv.conf
 
 # 更新包列表并安装软件包
-sudo apt-get update -y && sudo apt-get install -y curl wget git vim nano sudo iptables python3 python3-pip net-tools unzip zip gcc g++ make jq netcat-traditional iptables-persistent
+sudo apt-get update -y && sudo apt-get install -y cron git vim nano sudo iptables python3 python3-pip net-tools unzip zip gcc g++ make jq netcat-traditional iptables-persistent
 
-sudo apt-get install cron
 
-# 配置pip
-echo -e "[global]\nbreak-system-packages = true" | sudo tee /etc/pip.conf
 
 # 更新包和依赖
 sudo apt-get upgrade -y && sudo apt-get dist-upgrade -y
-#更新pip
-echo "更新中请稍后......"
-pip3 list --outdated | awk 'NR>2 {print $1}' | xargs -n1 pip3 install -U
-
-# 清理垃圾并更新python3
-sudo apt-get autoremove -y && sudo apt-get install only-upgrade python3 -y
-
-clear
-
-function clean_journal {
-  journalctl --rotate
-  journalctl --vacuum-time=1s
-  journalctl --vacuum-size=50M
-}
-
-if [ -f "/etc/debian_version" ]; then
-  # Debian-based systems
-  if command -v apt > /dev/null; then
-    apt autoremove --purge -y || echo "Failed to autoremove packages"
-    apt clean -y || echo "Failed to clean package cache"
-    apt autoclean -y || echo "Failed to autoclean package cache"
-    apt remove --purge $(dpkg -l | awk '/^rc/ {print $2}') -y || echo "Failed to remove packages with rc status"
-    clean_journal
-    apt remove --purge $(dpkg -l | awk '/^ii linux-(image|headers)-[^ ]+/{print $2}' | grep -v $(uname -r | sed 's/-.*//') | xargs) -y || echo "Failed to remove old kernels"
-  else
-    echo "apt command not found"
-  fi
-fi
 
 # 检查/proc/sys/net/ipv4/tcp_fastopen文件是否存在，如果存在则启用TFO客户端功能
 [ -f "/proc/sys/net/ipv4/tcp_fastopen" ] && echo 3 | sudo tee /proc/sys/net/ipv4/tcp_fastopen
