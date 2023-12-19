@@ -71,6 +71,8 @@ echo -e "nameserver 8.8.4.4\nnameserver 8.8.8.8" | sudo tee /etc/resolv.conf
 # 更新包列表并安装软件包
 sudo apt-get update -y && sudo apt-get install -y curl wget git vim nano sudo iptables python3 python3-pip net-tools unzip zip gcc g++ make jq netcat-traditional iptables-persistent
 
+sudo apt-get install cron
+
 # 配置pip
 echo -e "[global]\nbreak-system-packages = true" | sudo tee /etc/pip.conf
 
