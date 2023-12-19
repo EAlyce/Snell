@@ -74,7 +74,7 @@ sudo apt-get update -y && sudo apt-get install -y cron git vim nano sudo iptable
 
 
 # 更新包和依赖
-sudo apt-get upgrade -y && sudo apt-get dist-upgrade -y
+sudo apt update -y && apt upgrade -y && apt dist-upgrade -y && apt full-upgrade -y
 
 # 检查/proc/sys/net/ipv4/tcp_fastopen文件是否存在，如果存在则启用TFO客户端功能
 [ -f "/proc/sys/net/ipv4/tcp_fastopen" ] && echo 3 | sudo tee /proc/sys/net/ipv4/tcp_fastopen
