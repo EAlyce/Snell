@@ -1,4 +1,6 @@
 #!/bin/bash
+#脚本仅适用于Debian Ununtu 
+#作者 Alyce
 # 验证当前用户是否为root。
 [ "$(id -u)" != "0" ] && echo "Error: You must be root to run this script" && exit 1
 sudo apt-get install -y curl wget
