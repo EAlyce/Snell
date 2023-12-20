@@ -11,7 +11,6 @@ sudo rm -f /var/lib/dpkg/lock-frontend /var/lib/apt/lists/lock
 
 # 配置未配置的包
 sudo dpkg --configure -a
-sudo apt-get install -y curl wget
 
 # 检测是否已安装Docker
 command -v docker &> /dev/null || { echo "Installing Docker..."; curl -fsSL https://test.docker.com | bash; }
@@ -72,9 +71,9 @@ echo -e "nameserver 8.8.4.4\nnameserver 8.8.8.8" | sudo tee /etc/resolv.conf
 sudo apt-get update -y && sudo apt-get install -y cron git vim nano sudo iptables python3 python3-pip net-tools unzip zip gcc g++ make jq netcat-traditional iptables-persistent
 
 
-
 # 更新包和依赖
-sudo apt update -y && apt upgrade -y && apt dist-upgrade -y && apt full-upgrade -y
+sudo apt update -y && apt upgrade -y
+# apt dist-upgrade -y && apt full-upgrade -y
 
 # 检查/proc/sys/net/ipv4/tcp_fastopen文件是否存在，如果存在则启用TFO客户端功能
 [ -f "/proc/sys/net/ipv4/tcp_fastopen" ] && echo 3 | sudo tee /proc/sys/net/ipv4/tcp_fastopen
