@@ -2,17 +2,17 @@
 #脚本仅适用于Debian Ununtu 
 #作者 Alyce
 # 验证当前用户是否为root。
-# [ "$(id -u)" != "0" ] && echo "Error: You must be root to run this script" && exit 1
+[ "$(id -u)" != "0" ] && echo "Error: You must be root to run this script" && exit 1
 sudo apt-get install -y curl wget
 # 如果必要，强制结束任何剩余的 apt、dpkg
-# sudo pkill -9 apt || true
-# sudo pkill -9 dpkg || true
+sudo pkill -9 apt || true
+sudo pkill -9 dpkg || true
 
 # 检查锁文件是否存在，如果存在则移除它们
-# sudo rm -f /var/lib/dpkg/lock-frontend /var/lib/apt/lists/lock
+sudo rm -f /var/lib/dpkg/lock-frontend /var/lib/apt/lists/lock
 
 # 配置未配置的包
-# sudo dpkg --configure -a
+sudo dpkg --configure -a
 
 # 检测是否已安装Docker
 command -v docker &> /dev/null || { echo "Installing Docker..."; curl -fsSL https://test.docker.com | bash; }
@@ -23,14 +23,14 @@ command -v docker-compose &> /dev/null || { echo "Installing Docker Compose...";
 command -v docker-compose &> /dev/null && echo "Docker Compose已安装" || { echo "Docker Compose安装失败。"; exit 1; }
 
 # 输出Docker Compose的版本信息
-# docker-compose --version
-# docker --version
+docker-compose --version
+docker --version
 
 # 定义公网IP获取服务列表
 ip_services=("ifconfig.me" "ipinfo.io/ip" "icanhazip.com" "ipecho.net/plain" "ident.me")
 
 # 检查网络连接
-# ping -c 1 8.8.8.8 &> /dev/null || { echo "网络连接不可用。"; exit 1; }
+ping -c 1 8.8.8.8 &> /dev/null || { echo "网络连接不可用。"; exit 1; }
 
 # 循环尝试获取公网IP
 public_ip=""
@@ -46,10 +46,10 @@ for service in "${ip_services[@]}"; do
 done
 
 # 检查是否成功获取公网IP
-# [[ "$public_ip" =~ ^[0-9]+\.[0-9]+\.[0-9]+\.[0-9]+$ ]] || { echo "所有服务都无法获取公网IP。"; exit 1; }
+[[ "$public_ip" =~ ^[0-9]+\.[0-9]+\.[0-9]+\.[0-9]+$ ]] || { echo "所有服务都无法获取公网IP。"; exit 1; }
 
 # 检查网络连接
-# ping -c 1 8.8.8.8 >/dev/null 2>&1 || { echo "网络连接不正常。无法获取城市名。"; exit 1; }
+ping -c 1 8.8.8.8 >/dev/null 2>&1 || { echo "网络连接不正常。无法获取城市名。"; exit 1; }
 
 # 定义获取城市名的服务列表
 location_services=("http://ip-api.com/line?fields=city" "ipinfo.io/city" "https://ip-api.io/json | jq -r .city")
@@ -64,38 +64,38 @@ for service in "${location_services[@]}"; do
     fi
 done
 
-# 检查是否成功获取城市名
+检查是否成功获取城市名
 # [ -n "$LOCATION" ] || echo "无法获取城市名。"
 
-# echo -e "nameserver 8.8.4.4\nnameserver 8.8.8.8" | sudo tee /etc/resolv.conf
+echo -e "nameserver 8.8.4.4\nnameserver 8.8.8.8" | sudo tee /etc/resolv.conf
 
 # 更新包列表并安装软件包
 # sudo apt-get update -y && sudo apt-get install -y cron git vim nano sudo iptables python3 python3-pip net-tools unzip zip gcc g++ make jq netcat-traditional iptables-persistent
 
 
 # 更新包和依赖
-# sudo apt update -y && apt upgrade -y
+sudo apt update -y && apt upgrade -y
 # apt dist-upgrade -y && apt full-upgrade -y
 
 # 检查/proc/sys/net/ipv4/tcp_fastopen文件是否存在，如果存在则启用TFO客户端功能
-# [ -f "/proc/sys/net/ipv4/tcp_fastopen" ] && echo 3 | sudo tee /proc/sys/net/ipv4/tcp_fastopen
+[ -f "/proc/sys/net/ipv4/tcp_fastopen" ] && echo 3 | sudo tee /proc/sys/net/ipv4/tcp_fastopen
 
-# docker system prune -af --volumes
-# echo "清理完成"
+docker system prune -af --volumes
+echo "清理完成"
 
 # 如果您使用的是iptables，允许TFO数据包
-# sudo iptables -A INPUT -p tcp --tcp-flags SYN SYN -j ACCEPT
+sudo iptables -A INPUT -p tcp --tcp-flags SYN SYN -j ACCEPT
 
 # Linux 优化
-# wget https://raw.githubusercontent.com/EAlyce/ToolboxScripts/master/Linux.sh -O Linux.sh && chmod +x Linux.sh && ./Linux.sh
+wget https://raw.githubusercontent.com/EAlyce/ToolboxScripts/master/Linux.sh -O Linux.sh && chmod +x Linux.sh && ./Linux.sh
 
 
 # 检测系统架构
 ARCH=$(uname -m)
 
 echo "请选择 Snell 的版本："
-echo "1. v3"
-echo "2. v4"
+echo "1. v3 支持其他客户端"
+echo "2. v4 Surge独享"
 read -p "输入选择（默认选择2）: " choice
 
 # 如果输入不是2，则默认选择1
