@@ -96,7 +96,7 @@ ARCH=$(uname -m)
 echo "请选择 Snell 的版本："
 echo "1. v3 支持其他客户端"
 echo "2. v4 Surge独享"
-read -p "输入选择（默认选择2）: " choice
+read -p "请输入选择（默认选择2）: " choice
 
 # 如果输入不是2，则默认选择1
 if [[ "$choice" != "1" ]]; then
