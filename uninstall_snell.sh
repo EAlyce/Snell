@@ -1,34 +1,87 @@
 #!/bin/bash
+install_docker_and_compose() {
+    # 安装Docker
+    command -v docker &> /dev/null || {
+        echo "Installing Docker...";
+        curl -fsSL https://get.docker.com | bash
+    }
+    command -v docker &> /dev/null && echo "Docker已安装"
 
-# 删除选定的容器和相关持久化文件夹
+    # 安装Docker Compose
+    command -v docker-compose &> /dev/null || {
+        echo "Installing Docker Compose...";
+        curl -L "https://github.com/docker/compose/releases/latest/download/docker-compose-$(uname -s)-$(uname -m)" -o /usr/local/bin/docker-compose
+        chmod +x /usr/local/bin/docker-compose;
+    }
+    command -v docker-compose &> /dev/null && echo "Docker Compose已安装" || {
+        echo "Docker Compose安装失败。";
+        exit 1; 
+    }
+}
+# Function to remove a container and its associated folder
 function remove_container() {
-  selected_container=$1
-  container_name=$(docker ps --filter "id=$selected_container" --format "{{.Names}}")
+  local selected_container=$1
+  local container_name=$(docker ps --filter "id=$selected_container" --format "{{.Names}}")
 
-  [ -n "$selected_container" ] && echo "正在停止容器 $selected_container ..." && docker stop $selected_container && echo "正在删除容器 $selected_container ..." && docker rm $selected_container && echo "容器 $selected_container 已删除。" && echo "正在查找与容器名 $container_name 相同的文件夹..." && find / -type d -name "$container_name" -exec echo "正在删除文件夹 '{}' ..."; sudo rm -rf "{}"; echo "文件夹 '{}' 已删除。" \; || echo "未知错误，无法找到容器。"
+  if [ -n "$selected_container" ]; then
+    echo "正在停止容器 $selected_container ..."
+    docker stop $selected_container
+
+    echo "正在删除容器 $selected_container ..."
+    docker rm $selected_container
+    echo "容器 $selected_container 已删除。"
+
+    local folder="/root/snelldocker/$container_name"
+    if [ -d "$folder" ]; then
+      echo "正在删除与容器名 $container_name 相同的文件夹 $folder ..."
+      sudo rm -rf "$folder"
+      echo "文件夹 $folder 已删除。"
+    else
+      echo "未找到与容器名 $container_name 相同的文件夹。"
+    fi
+  else
+    echo "未知错误，无法找到容器。"
+  fi
 }
 
-# 列出所有 Docker 容器
+# Function to list all Docker containers
 function list_containers() {
   while true; do
     CONTAINERS=$(docker ps -a --format "{{.ID}}:{{.Names}}")
 
-    [ -z "$CONTAINERS" ] && echo "没有找到 Docker 容器." && exit 0
+    if [ -z "$CONTAINERS" ]; then
+      echo "没有找到 Docker 容器."
+      exit 0
+    fi
 
     echo "选择要卸载的容器："
     declare -A container_map
+    index=0
+
     for container in $CONTAINERS; do
       id=$(echo $container | cut -d ':' -f1)
       name=$(echo $container | cut -d ':' -f2)
-      echo "${#container_map[@]}. $name ($id)"
-      container_map[${#container_map[@]}]=$id
+      echo "$index. $name ($id)"
+      container_map["$index"]=$id
+      ((index++))
     done
-    echo "${#container_map[@]}. 退出脚本"
-    container_map[${#container_map[@]}]="exit"
+
+    echo "$index. 退出脚本"
+    container_map["$index"]="exit"
+
     read -p "输入选择（输入数字）： " choice
 
-    [[ $choice =~ ^[0-9]+$ ]] && [ $choice -ge 1 ] && [ $choice -le ${#container_map[@]} ] && [ "${container_map[$choice]}" == "exit" ] && exit 0 || remove_container ${container_map[$choice]} || echo "输入无效，请输入有效的数字."
+    if [[ "${container_map["$choice"]}" == "exit" ]]; then
+      exit 0
+    elif [[ "${container_map["$choice"]}" ]]; then
+      remove_container "${container_map["$choice"]}"
+    else
+      echo "输入无效，请输入有效的数字."
+    fi
   done
 }
 
+# Start listing containers
+install_docker_and_compose
+docker system prune -af --volumes
 list_containers
