@@ -80,7 +80,19 @@ function list_containers() {
     fi
   done
 }
+# 定义设置 PATH 的函数
+set_custom_path() {
+    # 检查是否存在 PATH 变量，如果不存在则设置
+    PATH_CHECK=$(crontab -l | grep -q '^PATH=' && echo "true" || echo "false")
 
+    if [ "$PATH_CHECK" == "false" ]; then
+        # 设置全面的 PATH
+        PATH=/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin
+    fi
+}
+
+# 调用设置 PATH 函数
+set_custom_path
 # Start listing containers
 install_docker_and_compose
 docker system prune -af --volumes
