@@ -84,11 +84,23 @@ get_location() {
     [ -n "$LOCATION" ] || echo "无法获取城市名。"
 }
 function setup_environment {
-  echo -e "nameserver 8.8.4.4\nnameserver 8.8.8.8" | sudo tee /etc/resolv.conf
-  # 更新包列表并安装软件包
-  sudo apt-get update -y && sudo apt-get install -y iptables
-  # 更新包和依赖
-  sudo apt update -y && sudo apt upgrade -y
+
+   # Set DNS servers
+    echo -e "nameserver 8.8.4.4\nnameserver 8.8.8.8" | sudo tee /etc/resolv.conf
+
+   # Install tmux, mosh, iptables, and netfilter-persistent
+   sudo apt update && sudo apt install -y tmux mosh iptables netfilter-persistent
+ 
+   # Open UDP port range 60000 to 61000
+   sudo iptables -A INPUT -p udp --dport 60000:61000 -j ACCEPT
+
+   # Save iptables rules using netfilter-persistent
+   sudo iptables-save > /etc/iptables/rules.v4
+   sudo service netfilter-persistent reload
+
+   # Update packages and dependencies
+   sudo apt upgrade -y
+
   # apt dist-upgrade -y && apt full-upgrade -y
   [ -f "/proc/sys/net/ipv4/tcp_fastopen" ] && echo 3 | sudo tee /proc/sys/net/ipv4/tcp_fastopen
   docker system prune -af --volumes
