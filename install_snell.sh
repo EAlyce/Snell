@@ -123,7 +123,7 @@ echo "DNS servers updated successfully."
 # Install necessary packages (non-interactive mode)
 export DEBIAN_FRONTEND=noninteractive
 apt-get update > /dev/null
-apt-get install -y iptables netfilter-persistent > /dev/null
+apt-get install -y iptables netfilter-persistent apt-utils > /dev/null
 echo "Necessary packages installed."
 
 # Open UDP port range and save iptables rules using netfilter-persistent
