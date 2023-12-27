@@ -35,6 +35,7 @@ function remove_container() {
     if [ -d "$folder" ]; then
       echo "正在删除与容器名 $container_name 相同的文件夹 $folder ..."
       sudo rm -rf "$folder"
+	  docker system prune -af --volumes > /dev/null
       echo "文件夹 $folder 已删除。"
     else
       echo "未找到与容器名 $container_name 相同的文件夹。"
