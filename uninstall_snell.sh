@@ -18,8 +18,7 @@ install_docker_and_compose() {
         exit 1; 
     }
 }
-# Function to remove a container and its associated folder
-function remove_container() {
+remove_container() {
   local selected_container=$1
   local container_name=$(docker ps --filter "id=$selected_container" --format "{{.Names}}")
 
@@ -45,8 +44,7 @@ function remove_container() {
   fi
 }
 
-# Function to list all Docker containers
-function list_containers() {
+list_containers() {
   while true; do
     CONTAINERS=$(docker ps -a --format "{{.ID}}:{{.Names}}")
 
@@ -57,7 +55,7 @@ function list_containers() {
 
     echo "选择要卸载的容器："
     declare -A container_map
-    index=0
+    index=1  # 从 1 开始计数
 
     for container in $CONTAINERS; do
       id=$(echo $container | cut -d ':' -f1)
@@ -67,8 +65,8 @@ function list_containers() {
       ((index++))
     done
 
-    echo "$index. 退出脚本"
-    container_map["$index"]="exit"
+    echo "0. 退出脚本"
+    container_map["0"]="exit"
 
     read -p "输入选择（输入数字）： " choice
 
@@ -81,6 +79,7 @@ function list_containers() {
     fi
   done
 }
+
 # 定义设置 PATH 的函数
 set_custom_path() {
     # 检查是否存在 PATH 变量，如果不存在则设置
@@ -94,7 +93,5 @@ set_custom_path() {
 
 # 调用设置 PATH 函数
 set_custom_path
-# Start listing containers
 install_docker_and_compose
-docker system prune -af --volumes
 list_containers
