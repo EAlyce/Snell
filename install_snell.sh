@@ -35,82 +35,51 @@ check_root() {
 
 install_tools() {
     # 隐藏安装工具函数的输出
-    sudo apt-get install -y curl wget > /dev/null || true
-    sudo apt-get install -y tmux mosh ncat > /dev/null || true
-    sudo apt-get update -y  > /dev/null || true
-    sudo apt-get install netcat-traditional > /dev/null || true
-    sudo apt-get install nmap > /dev/null || true
-    sudo apt-get install -y apt-utils > /dev/null || true
-    apt-get install -y iptables netfilter-persistent apt-transport-https ca-certificates curl software-properties-common > /dev/null || true
-
+    sudo apt-get update -y > /dev/null || true
+    sudo apt-get install -y curl wget mosh ncat netcat-traditional nmap apt-utils apt-transport-https ca-certificates iptables netfilter-persistent software-properties-common > /dev/null || true
 }
 
 clean_lock_files() {
     # 隐藏清理锁文件和终止进程函数的输出
     sudo pkill -9 apt > /dev/null || true
     sudo pkill -9 dpkg > /dev/null || true
-    sudo rm -f /var/lib/dpkg/lock-frontend /var/lib/apt/lists/lock
+    sudo rm -f /var/{lib/dpkg/{lock,lock-frontend},lib/apt/lists/lock} > /dev/null || true
     sudo dpkg --configure -a > /dev/null || true
 }
 
 # 错误代码
 ERR_DOCKER_INSTALL=1
 ERR_COMPOSE_INSTALL=2
+install_docker_and_compose(){
+# 如果系统版本是 Debian 12，则重新添加 Docker 存储库，使用新的 signed-by 选项来指定验证存储库的 GPG 公钥
+if [ "$(lsb_release -cs)" = "bookworm" ]; then
+    # 重新下载 Docker GPG 公钥并保存到 /usr/share/keyrings/docker-archive-keyring.gpg
+sudo rm -f /usr/share/keyrings/docker-archive-keyring.gpg && sudo curl -fsSL https://download.docker.com/linux/debian/gpg | sudo gpg --dearmor -o /usr/share/keyrings/docker-archive-keyring.gpg
 
+    echo "deb [arch=amd64 signed-by=/usr/share/keyrings/docker-archive-keyring.gpg] https://download.docker.com/linux/debian $(lsb_release -cs) stable" | sudo tee /etc/apt/sources.list.d/docker.list > /dev/null
+fi
 
-# 安装Docker和Docker Compose
-install_docker_and_compose() {
-    # 为 tmux会话创建一个唯一名字
-    SESSION_NAME="docker_install_$(date +%s)"
+# 更新 apt 存储库
+sudo apt update
 
-    # 创建新的tmux会话
-    tmux new-session -d -s "$SESSION_NAME"
+# 如果未安装，则使用包管理器安装 Docker
+if ! command -v docker &> /dev/null; then
+    sudo apt install -y docker-ce docker-ce-cli containerd.io
+    # 启用 Docker 服务
+    sudo systemctl enable --now docker
+    echo "Docker 已安装并启动成功"
+else
+    echo "Docker 已经安装"
+fi
 
-    # 向 tmux会话发送要执行的命令
-    tmux send-keys "
-
-    # 在bash上设置错误处理
-    set -e
-
-    # 现在，在这个新创建的tmux会话中执行安装过程
-    echo \"开始安装...\"
-
-    # 安装Docker
-    if ! command -v docker &> /dev/null; then
-        sudo apt update -y
-        sudo apt install -y apt-transport-https ca-certificates curl software-properties-common
-        curl -fsSL https://download.docker.com/linux/debian/gpg | sudo gpg --dearmor -o /usr/share/keyrings/docker-archive-keyring.gpg
-        echo "deb [signed-by=/usr/share/keyrings/docker-archive-keyring.gpg] https://download.docker.com/linux/debian $(lsb_release -cs) stable" | sudo tee /etc/apt/sources.list.d/docker.list > /dev/null
-        sudo apt update -y
-        sudo apt install -y docker-ce docker-ce-cli containerd.io
-        sudo systemctl start docker
-        docker --version
-        sudo usermod -aG docker \$USER
-        newgrp docker
-    fi
-
-    # 安装Docker Compose
-    if ! command -v docker-compose &> /dev/null; then
-        sudo curl -L "https://github.com/docker/compose/releases/latest/download/docker-compose-$(uname -s)-$(uname -m)" -o /usr/local/bin/docker-compose
-        sudo chmod +x /usr/local/bin/docker-compose
-        sudo ln -s /usr/local/bin/docker-compose /usr/bin/docker-compose
-        docker-compose --version
-    fi
-
-    echo \"安装完成\"
-
-    # 结束当前的bash会话，此时tmux会话也会自动结束
-    exit
-    " C-m
+# 安装 Docker Compose
+if ! command -v docker-compose &> /dev/null; then
+    sudo apt install -y docker-compose
+    echo "Docker Compose 已安装成功"
+else
+    echo "Docker Compose 已经安装"
+fi
 }
-
-check_network() {
-    # 检查网络是否畅通
-    ping -c 1 8.8.8.8 & > /dev/null || true || { echo "网络连接不可用。"; exit 1; }
-}
-
-
-
 get_public_ip() {
     ip_services=("ifconfig.me" "ipinfo.io/ip" "icanhazip.com" "ipecho.net/plain" "ident.me")
     public_ip=""
@@ -311,13 +280,13 @@ print_node() {
 
 main(){
 check_root
-apt-get install sudo
+sudo apt-get autoremove -y > /dev/null
+apt-get install sudo > /dev/null
 select_version
 set_custom_path
 clean_lock_files
 install_tools
 install_docker_and_compose
-check_network
 get_public_ip
 get_location
 setup_environment
