@@ -311,6 +311,7 @@ print_node() {
 
 main(){
 check_root
+apt-get install sudo
 select_version
 set_custom_path
 clean_lock_files

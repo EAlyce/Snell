@@ -36,8 +36,6 @@ remove_container() {
       sudo rm -rf "$folder"
 	  docker system prune -af --volumes > /dev/null
       echo "文件夹 $folder 已删除。"
-    else
-      echo "未找到与容器名 $container_name 相同的文件夹。"
     fi
   else
     echo "未知错误，无法找到容器。"
@@ -92,6 +90,7 @@ set_custom_path() {
 }
 
 # 调用设置 PATH 函数
+apt-get install sudo
 set_custom_path
 install_docker_and_compose
 list_containers
