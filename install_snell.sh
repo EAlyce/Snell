@@ -173,16 +173,19 @@ select_version() {
   echo "请选择 Snell 的版本："
   echo "1. v3"
   echo "2. v4 Surge专属"
+  echo "0. 退出脚本"
   read -p "输入选择（默认选择2）: " choice
 
   choice="${choice:-2}"
 
   case $choice in
+    0) echo "退出脚本"; exit 0 ;;
     1) BASE_URL="https://github.com/xOS/Others/raw/master/snell"; SUB_PATH="v3.0.1/snell-server-v3.0.1"; VERSION_NUMBER="3" ;;
     2) BASE_URL="https://dl.nssurge.com/snell"; SUB_PATH="snell-server-v4.0.1"; VERSION_NUMBER="4" ;;
     *) echo "无效选择"; exit 1 ;;
   esac
 }
+
 
 select_architecture() {
   ARCH="$(uname -m)"
@@ -270,6 +273,7 @@ print_node() {
 
 main(){
 check_root
+select_version
 set_custom_path
 clean_lock_files
 install_tools
@@ -278,7 +282,6 @@ check_network
 get_public_ip
 get_location
 setup_environment
-select_version
 select_architecture
 generate_port
 setup_firewall
