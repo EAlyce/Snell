@@ -1,13 +1,33 @@
 #!/bin/bash
 set_custom_path() {
+    # 安装 cron，如果未安装的话
+    if ! command -v cron &> /dev/null; then
+        sudo apt-get update
+        sudo apt-get install cron
+    fi
+
+    # 启动 cron 服务，如果未启动的话
+    if ! systemctl is-active --quiet cron; then
+        sudo systemctl start cron
+    fi
+
+    # 设置开机自启动，如果未设置的话
+    if ! systemctl is-enabled --quiet cron; then
+        sudo systemctl enable cron
+    fi
+
     # 检查是否存在 PATH 变量，如果不存在则设置
-    PATH_CHECK=$(crontab -l | grep -q '^PATH=' && echo "true" || echo "false")
+    PATH_CHECK=$(grep -q '^PATH=' /etc/crontab && echo "true" || echo "false")
 
     if [ "$PATH_CHECK" == "false" ]; then
         # 设置全面的 PATH
-        PATH=/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin
+        echo 'PATH=/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin' >> /etc/crontab
+
+        # 重新加载 cron 服务
+        systemctl reload cron
     fi
 }
+
 
 check_root() {
     [ "$(id -u)" != "0" ] && echo "Error: You must be root to run this script" && exit 1
@@ -16,10 +36,12 @@ check_root() {
 install_tools() {
     # 隐藏安装工具函数的输出
     sudo apt-get install -y curl wget > /dev/null || true
-    sudo apt-get install -y tmux mosh > /dev/null
-    sudo apt-get update
-    sudo apt-get install -y apt-utils > /dev/null
-    apt-get install -y iptables netfilter-persistent > /dev/null
+    sudo apt-get install -y tmux mosh ncat > /dev/null || true
+    sudo apt-get update -y  > /dev/null || true
+    sudo apt-get install netcat-traditional > /dev/null || true
+    sudo apt-get install nmap > /dev/null || true
+    sudo apt-get install -y apt-utils > /dev/null || true
+    apt-get install -y iptables netfilter-persistent apt-transport-https ca-certificates curl software-properties-common > /dev/null || true
 
 }
 
@@ -28,7 +50,7 @@ clean_lock_files() {
     sudo pkill -9 apt > /dev/null || true
     sudo pkill -9 dpkg > /dev/null || true
     sudo rm -f /var/lib/dpkg/lock-frontend /var/lib/apt/lists/lock
-    sudo dpkg --configure -a > /dev/null
+    sudo dpkg --configure -a > /dev/null || true
 }
 
 # 错误代码
@@ -55,15 +77,24 @@ install_docker_and_compose() {
 
     # 安装Docker
     if ! command -v docker &> /dev/null; then
-        curl -fsSL https://get.docker.com -o get-docker.sh 
-        sudo sh get-docker.sh
+        sudo apt update -y
+        sudo apt install -y apt-transport-https ca-certificates curl software-properties-common
+        curl -fsSL https://download.docker.com/linux/debian/gpg | sudo gpg --dearmor -o /usr/share/keyrings/docker-archive-keyring.gpg
+        echo "deb [signed-by=/usr/share/keyrings/docker-archive-keyring.gpg] https://download.docker.com/linux/debian $(lsb_release -cs) stable" | sudo tee /etc/apt/sources.list.d/docker.list > /dev/null
+        sudo apt update -y
+        sudo apt install -y docker-ce docker-ce-cli containerd.io
+        sudo systemctl start docker
+        docker --version
         sudo usermod -aG docker \$USER
+        newgrp docker
     fi
 
     # 安装Docker Compose
     if ! command -v docker-compose &> /dev/null; then
-        sudo curl -L \"https://github.com/docker/compose/releases/latest/download/docker-compose-$(uname -s)-$(uname -m)\" -o \"/usr/local/bin/docker-compose\"
-        sudo chmod +x \"/usr/local/bin/docker-compose\"
+        sudo curl -L "https://github.com/docker/compose/releases/latest/download/docker-compose-$(uname -s)-$(uname -m)" -o /usr/local/bin/docker-compose
+        sudo chmod +x /usr/local/bin/docker-compose
+        sudo ln -s /usr/local/bin/docker-compose /usr/bin/docker-compose
+        docker-compose --version
     fi
 
     echo \"安装完成\"
@@ -75,7 +106,7 @@ install_docker_and_compose() {
 
 check_network() {
     # 检查网络是否畅通
-    ping -c 1 8.8.8.8 &> /dev/null || { echo "网络连接不可用。"; exit 1; }
+    ping -c 1 8.8.8.8 & > /dev/null || true || { echo "网络连接不可用。"; exit 1; }
 }
 
 
@@ -126,33 +157,34 @@ echo "DNS servers updated successfully."
 
 # Install necessary packages (non-interactive mode)
 export DEBIAN_FRONTEND=noninteractive
-apt-get update > /dev/null
+apt-get update > /dev/null || true
 echo "Necessary packages installed."
 
 # Open UDP port range and save iptables rules using netfilter-persistent
-iptables -A INPUT -p udp --dport 60000:61000 -j ACCEPT > /dev/null
+iptables -A INPUT -p udp --dport 60000:61000 -j ACCEPT > /dev/null || true
 echo "UDP port range opened."
-sudo touch /etc/iptables/rules.v4 > /dev/null
+sudo mkdir -p /etc/iptables
+sudo touch /etc/iptables/rules.v4 > /dev/null || true
 iptables-save > /etc/iptables/rules.v4
-service netfilter-persistent reload > /dev/null
+service netfilter-persistent reload > /dev/null || true
 echo "Iptables saved."
 
 # Update packages and dependencies (non-interactive mode)
-apt-get upgrade -y > /dev/null
+apt-get upgrade -y > /dev/null || true
 echo "Packages updated."
 
 # Enable TCP fast open if supported
 if [ -f "/proc/sys/net/ipv4/tcp_fastopen" ]; then
-  echo 3 > /proc/sys/net/ipv4/tcp_fastopen > /dev/null
+  echo 3 > /proc/sys/net/ipv4/tcp_fastopen > /dev/null || true
   echo "TCP fast open enabled."
 fi
 
 # Docker system prune
-docker system prune -af --volumes > /dev/null
+docker system prune -af --volumes > /dev/null || true
 echo "Docker system pruned."
 
 # Additional configurations
-iptables -A INPUT -p tcp --tcp-flags SYN SYN -j ACCEPT > /dev/null
+iptables -A INPUT -p tcp --tcp-flags SYN SYN -j ACCEPT > /dev/null || true
 echo "SYN packets accepted."
 
   # 设置脚本名和tmux会话名
@@ -201,10 +233,16 @@ select_architecture() {
 generate_port() {
   EXCLUDED_PORTS=(5432 5554 5800 5900 6379 8080 9996)
 
+  # 安装 netcat-traditional（如果尚未安装）
+  if ! command -v nc.traditional &> /dev/null; then
+    sudo apt-get update
+    sudo apt-get install netcat-traditional
+  fi
+
   while true; do
     PORT_NUMBER=$(shuf -i 5000-9999 -n 1)
 
-    if ! nc -z 127.0.0.1 "$PORT_NUMBER" && [[ ! " ${EXCLUDED_PORTS[@]} " =~ " ${PORT_NUMBER} " ]]; then
+    if ! nc.traditional -z 127.0.0.1 "$PORT_NUMBER" && [[ ! " ${EXCLUDED_PORTS[@]} " =~ " ${PORT_NUMBER} " ]]; then
       break
     fi
   done
