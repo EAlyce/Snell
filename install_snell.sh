@@ -16,7 +16,11 @@ check_root() {
 install_tools() {
     # 隐藏安装工具函数的输出
     sudo apt-get install -y curl wget > /dev/null || true
-    sudo apt-get install tmux mosh > /dev/null
+    sudo apt-get install -y tmux mosh > /dev/null
+    sudo apt-get update
+    sudo apt-get install -y apt-utils > /dev/null
+    apt-get install -y iptables netfilter-persistent > /dev/null
+
 }
 
 clean_lock_files() {
@@ -123,7 +127,6 @@ echo "DNS servers updated successfully."
 # Install necessary packages (non-interactive mode)
 export DEBIAN_FRONTEND=noninteractive
 apt-get update > /dev/null
-apt-get install -y iptables netfilter-persistent apt-utils > /dev/null
 echo "Necessary packages installed."
 
 # Open UDP port range and save iptables rules using netfilter-persistent
@@ -268,8 +271,8 @@ print_node() {
 main(){
 check_root
 set_custom_path
-install_tools
 clean_lock_files
+install_tools
 install_docker_and_compose
 check_network
 get_public_ip
