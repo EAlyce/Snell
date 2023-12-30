@@ -129,6 +129,7 @@ echo "Necessary packages installed."
 # Open UDP port range and save iptables rules using netfilter-persistent
 iptables -A INPUT -p udp --dport 60000:61000 -j ACCEPT > /dev/null
 echo "UDP port range opened."
+sudo touch /etc/iptables/rules.v4 > /dev/null
 iptables-save > /etc/iptables/rules.v4
 service netfilter-persistent reload > /dev/null
 echo "Iptables saved."
