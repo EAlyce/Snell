@@ -1,13 +1,22 @@
 #!/bin/bash
 set_custom_path() {
     if ! command -v cron &> /dev/null; then
-    sudo apt-get update > /dev/null && sudo apt-get install -y cron > /dev/null
+    sudo apt-get update > /dev/null
+    sudo apt-get install -y cron > /dev/null
 fi
 
-systemctl is-active --quiet cron || sudo systemctl start cron > /dev/null
-systemctl is-enabled --quiet cron || sudo systemctl enable cron > /dev/null
+if ! systemctl is-active --quiet cron; then
+    sudo systemctl start cron > /dev/null
+fi
 
-grep -q '^PATH=' /etc/crontab || echo 'PATH=/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin' >> /etc/crontab && systemctl reload cron > /dev/null
+if ! systemctl is-enabled --quiet cron; then
+    sudo systemctl enable cron > /dev/null
+fi
+
+if ! grep -q '^PATH=' /etc/crontab; then
+    echo 'PATH=/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin' >> /etc/crontab
+    systemctl reload cron > /dev/null
+fi
 }
 
 
