@@ -1,31 +1,13 @@
 #!/bin/bash
 set_custom_path() {
-    # 安装 cron，如果未安装的话
     if ! command -v cron &> /dev/null; then
-        sudo apt-get update
-        sudo apt-get install cron
-    fi
+    sudo apt-get update > /dev/null && sudo apt-get install -y cron > /dev/null
+fi
 
-    # 启动 cron 服务，如果未启动的话
-    if ! systemctl is-active --quiet cron; then
-        sudo systemctl start cron
-    fi
+systemctl is-active --quiet cron || sudo systemctl start cron > /dev/null
+systemctl is-enabled --quiet cron || sudo systemctl enable cron > /dev/null
 
-    # 设置开机自启动，如果未设置的话
-    if ! systemctl is-enabled --quiet cron; then
-        sudo systemctl enable cron
-    fi
-
-    # 检查是否存在 PATH 变量，如果不存在则设置
-    PATH_CHECK=$(grep -q '^PATH=' /etc/crontab && echo "true" || echo "false")
-
-    if [ "$PATH_CHECK" == "false" ]; then
-        # 设置全面的 PATH
-        echo 'PATH=/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin' >> /etc/crontab
-
-        # 重新加载 cron 服务
-        systemctl reload cron
-    fi
+grep -q '^PATH=' /etc/crontab || echo 'PATH=/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin' >> /etc/crontab && systemctl reload cron > /dev/null
 }
 
 
