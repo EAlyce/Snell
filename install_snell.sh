@@ -263,7 +263,9 @@ print_node() {
     echo
     echo
   elif [ "$choice" == "2" ]; then
+    echo
     echo "$LOCATION Snell v$VERSION_NUMBER $PORT_NUMBER = snell, $public_ip, $PORT_NUMBER, psk=$PASSWORD, version=$VERSION_NUMBER"
+    echo
   fi
 }
 
