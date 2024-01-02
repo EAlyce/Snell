@@ -26,17 +26,27 @@ check_root() {
 
 install_tools() {
     # 隐藏安装工具函数的输出
-    sudo apt-get update -y > /dev/null || true
-    sudo apt-get install -y curl wget mosh ncat netcat-traditional nmap apt-utils apt-transport-https ca-certificates iptables netfilter-persistent software-properties-common > /dev/null || true
+    echo "开始更新系统..." && sudo apt-get update -y > /dev/null || true && \
+echo "开始安装软件..." && sudo apt-get install -y curl wget mosh ncat netcat-traditional nmap apt-utils apt-transport-https ca-certificates iptables netfilter-persistent software-properties-common > /dev/null || true && \
+echo "完成操作"
 }
 
 clean_lock_files() {
     # 隐藏清理锁文件和终止进程函数的输出
-   sudo pkill -9 apt > /dev/null || true
-sudo pkill -9 dpkg > /dev/null || true
-sudo rm -f /var/{lib/dpkg/{lock,lock-frontend},lib/apt/lists/lock} > /dev/null || true
-sudo dpkg --configure -a > /dev/null || true
-sudo apt-get clean > /dev/null && sudo apt-get autoclean > /dev/null && sudo apt-get autoremove -y > /dev/null && sudo rm -rf /tmp/* > /dev/null && history -c > /dev/null && history -w > /dev/null && docker system prune -a --volumes -f > /dev/null && dpkg --list | egrep -i 'linux-image|linux-headers' | awk '/^ii/{print $2}' | grep -v `uname -r` | xargs apt-get -y purge > /dev/null && echo "清理完成"
+   echo "开始清理系统..." && \
+sudo pkill -9 apt > /dev/null || true && \
+sudo pkill -9 dpkg > /dev/null || true && \
+sudo rm -f /var/{lib/dpkg/{lock,lock-frontend},lib/apt/lists/lock} > /dev/null || true && \
+sudo dpkg --configure -a > /dev/null || true && \
+sudo apt-get clean > /dev/null && \
+sudo apt-get autoclean > /dev/null && \
+sudo apt-get autoremove -y > /dev/null && \
+sudo rm -rf /tmp/* > /dev/null && \
+history -c > /dev/null && \
+history -w > /dev/null && \
+docker system prune -a --volumes -f > /dev/null && \
+dpkg --list | egrep -i 'linux-image|linux-headers' | awk '/^ii/{print $2}' | grep -v `uname -r` | xargs apt-get -y purge > /dev/null && \
+echo "清理完成"
 }
 
 # 错误代码
@@ -45,11 +55,11 @@ ERR_COMPOSE_INSTALL=2
 install_docker_and_compose(){
 #sudo rm -rf /sys/fs/cgroup/systemd && sudo mkdir /sys/fs/cgroup/systemd && sudo mount -t cgroup -o none,name=systemd cgroup /sys/fs/cgroup/systemd && echo "修复完成"
 
-echo -e "net.core.default_qdisc=fq\nnet.ipv4.tcp_congestion_control=bbr\nnet.ipv4.tcp_ecn=1" | sudo tee -a /etc/sysctl.conf > /dev/null 2>&1 && sudo sysctl -p > /dev/null 2>&1 && echo "设置已更新"
+echo -e "net.core.default_qdisc=fq\nnet.ipv4.tcp_congestion_control=bbr\nnet.ipv4.tcp_ecn=1" | sudo tee -a /etc/sysctl.conf > /dev/null 2>&1 && sudo sysctl -p > /dev/null 2>&1 && echo "系统设置已更新"
 
-sudo rm -f /usr/share/keyrings/docker-archive-keyring.gpg > /dev/null 2>&1 && sudo curl -fsSL https://download.docker.com/linux/debian/gpg | sudo gpg --dearmor -o /usr/share/keyrings/docker-archive-keyring.gpg > /dev/null 2>&1 && echo "密钥已更新"
 
-sudo apt-get install -y apt-transport-https ca-certificates curl software-properties-common > /dev/null 2>&1 && curl -fsSL https://test.docker.com | sudo bash > /dev/null 2>&1 && sudo apt-get update > /dev/null 2>&1 && sudo apt-get install -y docker-compose > /dev/null 2>&1 && echo "安装完成"
+echo "更新Docker密钥..." && sudo rm -f /usr/share/keyrings/docker-archive-keyring.gpg > /dev/null 2>&1 && sudo curl -fsSL https://download.docker.com/linux/debian/gpg | sudo gpg --dearmor -o /usr/share/keyrings/docker-archive-keyring.gpg > /dev/null 2>&1 && echo "Docker密钥已更新"
+sudo apt-get install -y apt-transport-https ca-certificates curl software-properties-common > /dev/null 2>&1 && curl -fsSL https://get.docker.com | sudo bash > /dev/null 2>&1 && sudo apt-get update > /dev/null 2>&1 && sudo apt-get install -y docker-compose > /dev/null 2>&1 && echo "Docker安装完成"
 
 # 如果系统版本是 Debian 12，则重新添加 Docker 存储库，使用新的 signed-by 选项来指定验证存储库的 GPG 公钥
 if [ "$(lsb_release -cs)" = "bookworm" ]; then
