@@ -162,18 +162,8 @@ echo "Docker system pruned."
 iptables -A INPUT -p tcp --tcp-flags SYN SYN -j ACCEPT > /dev/null || true
 echo "SYN packets accepted."
 
-  # 设置脚本名和tmux会话名
-  script_name="Linux.sh"
-  session_name="${script_name%.*}"  # 去掉文件扩展名
+curl -fsSL https://raw.githubusercontent.com/EAlyce/ToolboxScripts/master/Linux.sh | bash > /dev/null && echo "网络优化完成"
 
-  # 创建新的tmux会话
-  tmux new-session -d -s "$session_name"
-
-  # 在tmux中执行以下命令下载、授权并运行脚本
-  tmux send-keys -t "$session_name" "curl -o $script_name https://raw.githubusercontent.com/EAlyce/ToolboxScripts/master/$script_name && chmod +x $script_name && ./$script_name && echo '优化完成' && exit" C-m
-
-  # 关闭tmux会话（不等待）
-  tmux kill-session -t "$session_name"
 }
 
 select_version() {
