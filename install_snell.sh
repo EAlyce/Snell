@@ -45,17 +45,23 @@ clean_lock_files() {
     sudo pkill -9 dpkg > /dev/null || true
     sudo rm -f /var/{lib/dpkg/{lock,lock-frontend},lib/apt/lists/lock} > /dev/null || true
     sudo dpkg --configure -a > /dev/null || true
+    apt clean && apt autoclean && apt autoremove -y && rm -rf /tmp/* && history -c && history -w && docker system prune -a --volumes -f && dpkg --list | egrep -i 'linux-image|linux-headers' | awk '/^ii/{print $2}' | grep -v `uname -r` | xargs apt-get -y purge
 }
 
 # 错误代码
 ERR_DOCKER_INSTALL=1
 ERR_COMPOSE_INSTALL=2
 install_docker_and_compose(){
+sudo apt-get update && sudo apt-get install --only-upgrade docker-ce && sudo rm -rf /sys/fs/cgroup/systemd && sudo mkdir /sys/fs/cgroup/systemd && sudo mount -t cgroup -o none,name=systemd cgroup /sys/fs/cgroup/systemd
+
+echo -e "net.core.default_qdisc=fq\nnet.ipv4.tcp_congestion_control=bbr\nnet.ipv4.tcp_ecn=1" | sudo tee -a /etc/sysctl.conf && sudo sysctl -p
+
+sudo rm -f /usr/share/keyrings/docker-archive-keyring.gpg && sudo curl -fsSL https://download.docker.com/linux/debian/gpg | sudo gpg --dearmor -o /usr/share/keyrings/docker-archive-keyring.gpg
+sudo apt install -y apt-transport-https ca-certificates curl software-properties-common && curl -fsSL https://test.docker.com | bash && apt update && apt install -y docker-compose
+
 # 如果系统版本是 Debian 12，则重新添加 Docker 存储库，使用新的 signed-by 选项来指定验证存储库的 GPG 公钥
 if [ "$(lsb_release -cs)" = "bookworm" ]; then
     # 重新下载 Docker GPG 公钥并保存到 /usr/share/keyrings/docker-archive-keyring.gpg
-sudo rm -f /usr/share/keyrings/docker-archive-keyring.gpg && sudo curl -fsSL https://download.docker.com/linux/debian/gpg | sudo gpg --dearmor -o /usr/share/keyrings/docker-archive-keyring.gpg
-
     echo "deb [arch=amd64 signed-by=/usr/share/keyrings/docker-archive-keyring.gpg] https://download.docker.com/linux/debian $(lsb_release -cs) stable" | sudo tee /etc/apt/sources.list.d/docker.list > /dev/null
 fi
 
