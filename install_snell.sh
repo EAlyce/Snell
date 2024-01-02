@@ -3,6 +3,7 @@ set_custom_path() {
     if ! command -v cron &> /dev/null; then
     sudo apt-get update > /dev/null
     sudo apt-get install -y cron > /dev/null
+    sudo apt-get install spinner > /dev/null
 fi
 
 if ! systemctl is-active --quiet cron; then
@@ -33,7 +34,8 @@ echo "operation completed"
 
 clean_lock_files() {
 
-   echo "Start cleaning the system..." && \
+   spinner 'Cleaning the system...' && \
+echo "Start cleaning the system..." && \
 sudo pkill -9 apt > /dev/null || true && \
 sudo pkill -9 dpkg > /dev/null || true && \
 sudo rm -f /var/{lib/dpkg/{lock,lock-frontend},lib/apt/lists/lock} > /dev/null || true && \
