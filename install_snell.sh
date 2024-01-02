@@ -140,7 +140,8 @@ echo "Iptables saved."
 apt-get upgrade -y > /dev/null || true
 echo "Packages updated."
 
-set -g history-limit 10000 > /dev/null
+echo "export HISTSIZE=10000" >> ~/.bashrc
+source ~/.bashrc
 
 if [ -f "/proc/sys/net/ipv4/tcp_fastopen" ]; then
   echo 3 > /proc/sys/net/ipv4/tcp_fastopen > /dev/null || true
