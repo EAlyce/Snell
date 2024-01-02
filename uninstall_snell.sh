@@ -1,23 +1,5 @@
 #!/bin/bash
-install_docker_and_compose() {
-    # 安装Docker
-    command -v docker &> /dev/null || {
-        echo "Installing Docker...";
-        curl -fsSL https://get.docker.com | bash
-    }
-    command -v docker &> /dev/null && echo "Docker已安装"
 
-    # 安装Docker Compose
-    command -v docker-compose &> /dev/null || {
-        echo "Installing Docker Compose...";
-        curl -L "https://github.com/docker/compose/releases/latest/download/docker-compose-$(uname -s)-$(uname -m)" -o /usr/local/bin/docker-compose
-        chmod +x /usr/local/bin/docker-compose;
-    }
-    command -v docker-compose &> /dev/null && echo "Docker Compose已安装" || {
-        echo "Docker Compose安装失败。";
-        exit 1; 
-    }
-}
 remove_container() {
   local selected_container=$1
   local container_name=$(docker ps --filter "id=$selected_container" --format "{{.Names}}")
@@ -92,5 +74,4 @@ set_custom_path() {
 # 调用设置 PATH 函数
 apt-get install sudo
 set_custom_path
-install_docker_and_compose
 list_containers
