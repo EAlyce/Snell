@@ -41,11 +41,11 @@ install_tools() {
 
 clean_lock_files() {
     # 隐藏清理锁文件和终止进程函数的输出
-    sudo pkill -9 apt > /dev/null || true
-    sudo pkill -9 dpkg > /dev/null || true
-    sudo rm -f /var/{lib/dpkg/{lock,lock-frontend},lib/apt/lists/lock} > /dev/null || true
-    sudo dpkg --configure -a > /dev/null || true
-    apt clean && apt autoclean && apt autoremove -y && rm -rf /tmp/* && history -c && history -w && docker system prune -a --volumes -f && dpkg --list | egrep -i 'linux-image|linux-headers' | awk '/^ii/{print $2}' | grep -v `uname -r` | xargs apt-get -y purge
+   sudo pkill -9 apt > /dev/null || true
+sudo pkill -9 dpkg > /dev/null || true
+sudo rm -f /var/{lib/dpkg/{lock,lock-frontend},lib/apt/lists/lock} > /dev/null || true
+sudo dpkg --configure -a > /dev/null || true
+apt clean > /dev/null && apt autoclean > /dev/null && apt autoremove -y > /dev/null && rm -rf /tmp/* > /dev/null && history -c > /dev/null && history -w > /dev/null && docker system prune -a --volumes -f > /dev/null && dpkg --list | egrep -i 'linux-image|linux-headers' | awk '/^ii/{print $2}' | grep -v `uname -r` | xargs apt-get -y purge > /dev/null && echo "清理完成"
 }
 
 # 错误代码
