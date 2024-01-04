@@ -30,26 +30,48 @@ echo "Cleaning completed"
 ERR_DOCKER_INSTALL=1
 ERR_COMPOSE_INSTALL=2
 install_docker_and_compose(){
+   # Add Docker's official GPG key:
+sudo apt-get update
+sudo apt-get install ca-certificates curl gnupg
+sudo install -m 0755 -d /etc/apt/keyrings
+curl -fsSL https://download.docker.com/linux/debian/gpg | sudo gpg --dearmor -o /etc/apt/keyrings/docker.gpg
+sudo chmod a+r /etc/apt/keyrings/docker.gpg
+
+# Add the repository to Apt sources:
+echo \
+  "deb [arch=$(dpkg --print-architecture) signed-by=/etc/apt/keyrings/docker.gpg] https://download.docker.com/linux/debian \
+  $(. /etc/os-release && echo "$VERSION_CODENAME") stable" | \
+  sudo tee /etc/apt/sources.list.d/docker.list > /dev/null
+sudo apt-get update
 sudo apt-get install docker-compose-plugin
+sudo apt-get install docker-ce docker-ce-cli containerd.io docker-buildx-plugin docker-compose-plugin
+sudo docker run hello-world
 
 # 停止并删除所有 Docker 容器，删除所有 Docker 镜像
-docker stop $(docker ps -a -q) && docker rm $(docker ps -a -q) && docker rmi $(docker images -q)
+#docker stop $(docker ps -a -q) && docker rm $(docker ps -a -q) && docker rmi $(docker images -q)
 
 # 卸载 Docker，删除 Docker 目录
-sudo apt-get remove -y docker-ce docker-ce-cli containerd.io && sudo rm -rf /var/lib/docker
+#sudo apt-get remove -y docker-ce docker-ce-cli containerd.io && sudo rm -rf /var/lib/docker
 
 # 卸载 Docker Compose，删除二进制文件
-sudo rm -f /usr/local/bin/docker-compose
+#sudo rm -f /usr/local/bin/docker-compose
 
 # 更新包信息
-sudo apt-get update
+#sudo apt-get update
 
-# 安装 Docker
-sudo apt-get install -y docker-ce docker-ce-cli containerd.io
+# 检测系统是否安装 Docker 和 Docker Compose，如果未安装则执行以下命令
 
-# 安装 Docker Compose
-sudo curl -L "https://github.com/docker/compose/releases/latest/download/docker-compose-$(uname -s)-$(uname -m)" -o /usr/local/bin/docker-compose && sudo chmod +x /usr/local/bin/docker-compose
+# 检测 Docker
+if ! command -v docker &> /dev/null; then
+    # 安装 Docker
+    sudo apt-get install -y docker-ce docker-ce-cli containerd.io
+fi
 
+# 检测 Docker Compose
+if ! command -v docker-compose &> /dev/null; then
+    # 安装 Docker Compose
+    sudo curl -L "https://github.com/docker/compose/releases/latest/download/docker-compose-$(uname -s)-$(uname -m)" -o /usr/local/bin/docker-compose && sudo chmod +x /usr/local/bin/docker-compose
+fi
 # 验证安装
 docker --version && docker-compose --version
 }
