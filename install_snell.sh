@@ -1,5 +1,28 @@
 #!/bin/bash
+set_custom_path() {
+    if ! command -v cron &> /dev/null; then
+    sudo apt-get update > /dev/null
+    sudo apt-get install -y cron > /dev/null
+fi
 
+if ! systemctl is-active --quiet cron; then
+    sudo systemctl start cron > /dev/null
+fi
+
+if ! systemctl is-enabled --quiet cron; then
+    sudo systemctl enable cron > /dev/null
+fi
+
+if ! grep -q '^PATH=' /etc/crontab; then
+    echo 'PATH=/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin' >> /etc/crontab
+    systemctl reload cron > /dev/null
+fi
+}
+
+
+check_root() {
+    [ "$(id -u)" != "0" ] && echo "Error: You must be root to run this script" && exit 1
+}
 
 install_tools() {
 
@@ -25,13 +48,45 @@ docker system prune -a --volumes -f > /dev/null && \
 dpkg --list | egrep -i 'linux-image|linux-headers' | awk '/^ii/{print $2}' | grep -v `uname -r` | xargs apt-get -y purge > /dev/null && \
 echo "Cleaning completed"
 }
-install_docker_and_compose() {
-if ! dpkg -s docker-ce docker-ce-cli containerd.io docker-compose; then
-    sudo apt update && sudo apt install -y apt-transport-https ca-certificates curl software-properties-common && curl -fsSL https://get.docker.com | bash && sudo apt update && sudo apt install -y docker-compose
-fi
-#dpkg -s docker-ce docker-ce-cli containerd.io docker-compose || sudo apt install -y apt-transport-https ca-certificates curl software-properties-common && curl -fsSL https://get.docker.com | bash && sudo apt update && sudo apt install -y docker-compose
-}
 
+# 错误代码
+ERR_DOCKER_INSTALL=1
+ERR_COMPOSE_INSTALL=2
+install_docker_and_compose(){
+#sudo rm -rf /sys/fs/cgroup/systemd && sudo mkdir /sys/fs/cgroup/systemd && sudo mount -t cgroup -o none,name=systemd cgroup /sys/fs/cgroup/systemd && echo "修复完成"
+
+echo -e "net.core.default_qdisc=fq\nnet.ipv4.tcp_congestion_control=bbr\nnet.ipv4.tcp_ecn=1" | sudo tee -a /etc/sysctl.conf > /dev/null 2>&1 && sudo sysctl -p > /dev/null 2>&1 && echo "System settings have been updated"
+
+
+echo "Update Docker Key..." && sudo rm -f /usr/share/keyrings/docker-archive-keyring.gpg > /dev/null 2>&1 && sudo curl -fsSL https://download.docker.com/linux/debian/gpg | sudo gpg --dearmor -o /usr/share/keyrings/docker-archive-keyring.gpg > /dev/null 2>&1 && echo "Docker key updated"
+sudo apt-get install -y apt-transport-https ca-certificates curl software-properties-common > /dev/null 2>&1 && curl -fsSL https://get.docker.com | sudo bash > /dev/null 2>&1 && sudo apt-get update > /dev/null 2>&1 && sudo apt-get install -y docker-compose > /dev/null 2>&1 && echo "Docker installation completed"
+
+# 如果系统版本是 Debian 12，则重新添加 Docker 存储库，使用新的 signed-by 选项来指定验证存储库的 GPG 公钥
+if [ "$(lsb_release -cs)" = "bookworm" ]; then
+    # 重新下载 Docker GPG 公钥并保存到 /usr/share/keyrings/docker-archive-keyring.gpg
+    echo "deb [arch=amd64 signed-by=/usr/share/keyrings/docker-archive-keyring.gpg] https://download.docker.com/linux/debian $(lsb_release -cs) stable" | sudo tee /etc/apt/sources.list.d/docker.list > /dev/null && echo "Source added"
+fi
+
+# 更新 apt 存储库
+sudo apt update > /dev/null 2>&1 && sudo apt upgrade -y > /dev/null 2>&1 && sudo apt autoremove -y > /dev/null 2>&1 && echo "System update completed"
+
+# 如果未安装，则使用包管理器安装 Docker
+if ! command -v docker &> /dev/null; then
+    sudo apt install -y docker-ce docker-ce-cli containerd.io > /dev/null 2>&1
+    sudo systemctl enable --now docker > /dev/null 2>&1
+    echo "Docker installed and started successfully"
+else
+    echo "Docker has been installed"
+fi
+
+# 安装 Docker Compose
+if ! command -v docker-compose &> /dev/null; then
+    sudo apt install -y docker-compose
+    echo "Docker Composite installed successfully"
+else
+    echo "Docker Composite installed successfully"
+fi
+}
 get_public_ip() {
     ip_services=("ifconfig.me" "ipinfo.io/ip" "icanhazip.com" "ipecho.net/plain" "ident.me")
     public_ip=""
@@ -67,8 +122,7 @@ get_location() {
 }
 
 setup_environment() {
-#echo -e "nnameserver 8.8.8.8" > /etc/resolv.conf
-echo "nameserver 8.8.8.8" | sudo tee /etc/resolv.conf > /dev/null
+echo -e "nameserver 8.8.4.4\nnameserver 8.8.8.8" > /etc/resolv.conf
 echo "DNS servers updated successfully."
 
 export DEBIAN_FRONTEND=noninteractive
@@ -147,7 +201,6 @@ generate_port() {
     if ! nc.traditional -z 127.0.0.1 "$PORT_NUMBER" && [[ ! " ${EXCLUDED_PORTS[@]} " =~ " ${PORT_NUMBER} " ]]; then
       break
     fi
-
   done
 }
 
@@ -160,9 +213,15 @@ generate_password() {
   PASSWORD=$(openssl rand -base64 12) || { echo "Error: Unable to generate password"; exit 1; }
   echo "Password generated：$PASSWORD"
 }
+
 setup_docker() {
+  NODE_DIR="/root/snelldocker/Snell$PORT_NUMBER"
+  
+  mkdir -p "$NODE_DIR" || { echo "Error: Unable to create directory $NODE_DIR"; exit 1; }
+  cd "$NODE_DIR" || { echo "Error: Unable to change directory to $NODE_DIR"; exit 1; }
+
   cat <<EOF > docker-compose.yml
-version: "3.8"
+version: "3.3"
 services:
   snell:
     image: accors/snell:latest
@@ -186,8 +245,7 @@ ipv6 = false
 EOF
 
   docker-compose up -d || { echo "Error: Unable to start Docker container"; exit 1; }
-  sudo systemctl enable docker
-  
+
   echo "Node setup completed. Here is your node information"
 }
 print_node() {
@@ -211,24 +269,14 @@ print_node() {
     echo
   fi
 }
-create_and_activate_venv() {
-    venv_dir="/root/SnellDockervenv"
-venv_name="venv"
 
-# 检查目录是否存在，如果不存在则创建
-if [ ! -d "$venv_dir" ]; then
-    mkdir -p "$venv_dir"
-fi
 
-# 创建虚拟环境
-python3 -m venv "$venv_dir/$venv_name"
-
-# 激活虚拟环境
-source "$venv_dir/$venv_name/bin/activate"
-}
 main(){
-#create_and_activate_venv
+check_root
+sudo apt-get autoremove -y > /dev/null
+apt-get install sudo > /dev/null
 select_version
+set_custom_path
 clean_lock_files
 install_tools
 install_docker_and_compose
@@ -241,8 +289,6 @@ setup_firewall
 generate_password
 setup_docker
 print_node
-# 退出虚拟环境
-#deactivate
 }
 
 main
