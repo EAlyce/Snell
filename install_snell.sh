@@ -187,9 +187,7 @@ generate_password() {
   echo "Password generated：$PASSWORD"
 }
 setup_docker() {
-
   cat <<EOF > docker-compose.yml
-version: "3.8"
 services:
   snell:
     image: accors/snell:latest
@@ -214,7 +212,6 @@ EOF
 
   docker-compose up -d || { echo "Error: Unable to start Docker container"; exit 1; }
   sudo systemctl enable docker
-  docker restart $(docker ps -q)
   
   echo "Node setup completed. Here is your node information"
 }
