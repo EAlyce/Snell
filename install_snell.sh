@@ -26,8 +26,7 @@ dpkg --list | egrep -i 'linux-image|linux-headers' | awk '/^ii/{print $2}' | gre
 echo "Cleaning completed"
 }
 install_docker_and_compose() {
-# 检测并安装 Docker 和 Docker Compose（稳定版本），如果未安装
-command -v docker &> /dev/null || command -v docker-compose &> /dev/null || sudo apt-get install -y docker-ce docker-ce-cli containerd.io docker-compose
+dpkg -s docker-ce docker-ce-cli containerd.io docker-compose || sudo apt install -y apt-transport-https ca-certificates curl software-properties-common && curl -fsSL https://get.docker.com | bash && sudo apt update && sudo apt install -y docker-compose
 }
 
 get_public_ip() {
