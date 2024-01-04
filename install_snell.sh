@@ -1,22 +1,5 @@
 #!/bin/bash
-set_custom_path() {
-    if ! command -v cron &> /dev/null; then
-    sudo apt-get update > /dev/null
-    sudo apt-get install -y cron > /dev/null
-    sudo systemctl start cron > /dev/null
-    sudo systemctl enable --quiet cron > /dev/null
-fi
 
-if ! grep -q '^PATH=' /etc/crontab; then
-    echo 'PATH=/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin' | sudo tee -a /etc/crontab > /dev/null
-    sudo systemctl reload cron > /dev/null
-fi
-}
-
-
-check_root() {
-    [ "$(id -u)" != "0" ] && echo "Error: You must be root to run this script" && exit 1
-}
 
 install_tools() {
 
@@ -48,20 +31,26 @@ ERR_DOCKER_INSTALL=1
 ERR_COMPOSE_INSTALL=2
 install_docker_and_compose(){
 
-# 安装Docker
-sudo apt update
-#sudo apt install -y docker.io
-curl -fsSL https://get.docker.com | sh && sudo usermod -aG docker $USER
-# 启动并设置Docker自启动
-#sudo systemctl start docker
-#sudo systemctl enable docker
+# 停止并删除所有 Docker 容器，删除所有 Docker 镜像
+docker stop $(docker ps -a -q) && docker rm $(docker ps -a -q) && docker rmi $(docker images -q)
 
-# 安装Docker Compose
-sudo curl -L "https://github.com/docker/compose/releases/download/2.23.3/docker-compose-$(uname -s)-$(uname -m)" -o /usr/local/bin/docker-compose
-sudo chmod +x /usr/local/bin/docker-compose
-#sudo apt install -y docker-compose
-docker --version
-docker-compose --version
+# 卸载 Docker，删除 Docker 目录
+sudo apt-get remove -y docker-ce docker-ce-cli containerd.io && sudo rm -rf /var/lib/docker
+
+# 卸载 Docker Compose，删除二进制文件
+sudo rm -f /usr/local/bin/docker-compose
+
+# 更新包信息
+sudo apt-get update
+
+# 安装 Docker
+sudo apt-get install -y docker-ce docker-ce-cli containerd.io
+
+# 安装 Docker Compose
+sudo curl -L "https://github.com/docker/compose/releases/latest/download/docker-compose-$(uname -s)-$(uname -m)" -o /usr/local/bin/docker-compose && sudo chmod +x /usr/local/bin/docker-compose
+
+# 验证安装
+docker --version && docker-compose --version
 }
 get_public_ip() {
     ip_services=("ifconfig.me" "ipinfo.io/ip" "icanhazip.com" "ipecho.net/plain" "ident.me")
@@ -258,11 +247,8 @@ print_node() {
 
 
 main(){
-check_root
-sudo apt-get autoremove -y > /dev/null
-apt-get install sudo > /dev/null
+    
 select_version
-set_custom_path
 clean_lock_files
 install_tools
 install_docker_and_compose
