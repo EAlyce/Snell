@@ -252,7 +252,7 @@ python3 -m venv "$venv_dir/$venv_name"
 source "$venv_dir/$venv_name/bin/activate"
 }
 main(){
-create_and_activate_venv
+#create_and_activate_venv
 select_version
 clean_lock_files
 install_tools
@@ -267,7 +267,7 @@ generate_password
 setup_docker
 print_node
 # 退出虚拟环境
-deactivate
+#deactivate
 }
 
 main
