@@ -179,24 +179,8 @@ generate_password() {
   echo "Password generated：$PASSWORD"
 }
 setup_docker() {
-  NODE_DIR="/root/snelldocker/Snell$PORT_NUMBER"
-  
-  mkdir -p "$NODE_DIR" || { echo "Error: Unable to create directory $NODE_DIR"; exit 1; }
-  cd "$NODE_DIR" || { echo "Error: Unable to change directory to $NODE_DIR"; exit 1; }
-
-  # Install Docker Compose if not already installed
-  if ! command -v docker-compose &> /dev/null; then
-    echo "Installing Docker Compose..."
-    sudo curl -L "https://github.com/docker/compose/releases/latest/download/docker-compose-$(uname -s)-$(uname -m)" -o /usr/local/bin/docker-compose
-    sudo chmod +x /usr/local/bin/docker-compose
-    echo "Docker Compose installed successfully."
-  fi
-
-  # Ensure docker-compose is available in the PATH
-  export PATH=$PATH:/usr/local/bin
 
   cat <<EOF > docker-compose.yml
-version: "3.8"
 services:
   snell:
     image: accors/snell:latest
@@ -219,7 +203,7 @@ obfs = off
 ipv6 = false
 EOF
 
-  docker-compose up -d || { echo "Error: Unable to start Docker container"; exit 1; }
+  docker compose up -d || { echo "Error: Unable to start Docker container"; exit 1; }
 
   echo "Node setup completed. Here is your node information"
 }
