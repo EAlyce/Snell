@@ -203,6 +203,9 @@ setup_docker() {
     echo "Docker Compose installed successfully."
   fi
 
+  # Ensure docker-compose is available in the PATH
+  export PATH=$PATH:/usr/local/bin
+
   cat <<EOF > docker-compose.yml
 version: "3.8"
 services:
