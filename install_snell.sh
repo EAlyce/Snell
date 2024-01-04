@@ -198,7 +198,7 @@ generate_password() {
 }
 setup_docker() {
 
-  cat <<EOF > docker-compose.yml
+  cat <<EOF > docker compose.yml
 services:
   snell:
     image: accors/snell:latest
