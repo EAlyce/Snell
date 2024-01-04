@@ -26,45 +26,27 @@ dpkg --list | egrep -i 'linux-image|linux-headers' | awk '/^ii/{print $2}' | gre
 echo "Cleaning completed"
 }
 install_docker_and_compose() {
-   
-# 添加 Docker GPG 密钥
-if ! sudo gpg --list-keys | grep -q "docker"; then
-    sudo apt-get update
-    sudo apt-get install -y ca-certificates curl gnupg
-    sudo install -m 0755 -d /etc/apt/keyrings
-    curl -fsSL https://download.docker.com/linux/debian/gpg | sudo gpg --dearmor -o /etc/apt/keyrings/docker.gpg -y
-    sudo chmod a+r /etc/apt/keyrings/docker.gpg -y
-fi
-
-# 添加 Docker 源
-if ! grep -q "download.docker.com" /etc/apt/sources.list.d/docker.list; then
-    echo "deb [arch=\$(dpkg --print-architecture) signed-by=/etc/apt/keyrings/docker.gpg] https://download.docker.com/linux/debian \$(. /etc/os-release && echo \"\$VERSION_CODENAME\") stable" | sudo tee /etc/apt/sources.list.d/docker.list > /dev/null
-    sudo apt-get update -y
-fi
-
-# 安装 Docker 和 Docker Compose
-sudo apt-get install -y docker-ce docker-ce-cli containerd.io docker-buildx-plugin docker-compose-plugin
-
-# 运行示例容器
-sudo docker run hello-world
-
-# 检测 Docker 版本是否大于等于 24
-if [[ "$(docker --version | awk '{print $3}' | sed 's/,//')" < "24" ]]; then
-    # 安装 Docker
-    sudo apt-get install -y docker-ce docker-ce-cli containerd.io
-fi
-
-# 检测 Docker Compose 版本是否大于等于 2.23
-if [[ "$(docker-compose version --short | awk -F '.' '{print $1$2}' | sed 's/v//')" < "223" ]]; then
-    # 安装 Docker Compose
-    sudo curl -L "https://github.com/docker/compose/releases/latest/download/docker-compose-$(uname -s)-$(uname -m)" -o /usr/local/bin/docker-compose && sudo chmod +x /usr/local/bin/docker-compose
-fi
-
-# 验证安装
+# 检测 Docker 和 Docker Compose 是否已安装
 if command -v docker &> /dev/null && command -v docker-compose &> /dev/null; then
-    echo "Docker and Docker Compose installation verified."
+    read -p "Docker 和 Docker Compose 已安装。是否添加密钥和源？ (y/n): " choice
+    if [ "$choice" = "y" ]; then
+        # 添加 Docker GPG 密钥
+        if ! sudo gpg --list-keys | grep -q "docker"; then
+            sudo apt-get update
+            sudo apt-get install -y ca-certificates curl gnupg
+            sudo install -m 0755 -d /etc/apt/keyrings
+            curl -fsSL https://download.docker.com/linux/debian/gpg | sudo gpg --dearmor -o /etc/apt/keyrings/docker.gpg -y
+            sudo chmod a+r /etc/apt/keyrings/docker.gpg -y
+        fi
+
+        # 添加 Docker 源
+        if ! grep -q "download.docker.com" /etc/apt/sources.list.d/docker.list; then
+            echo "deb [arch=\$(dpkg --print-architecture) signed-by=/etc/apt/keyrings/docker.gpg] https://download.docker.com/linux/debian \$(. /etc/os-release && echo \"\$VERSION_CODENAME\") stable" | sudo tee /etc/apt/sources.list.d/docker.list > /dev/null
+            sudo apt-get update -y
+        fi
+    fi
 else
-    echo "Error: Docker or Docker Compose installation failed."
+    echo "Docker 或 Docker Compose 未安装。请先安装后再运行此脚本。"
 fi
 }
 
