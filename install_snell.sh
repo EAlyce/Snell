@@ -189,6 +189,7 @@ generate_password() {
 setup_docker() {
 
   cat <<EOF > docker-compose.yml
+version: "3.8"
 services:
   snell:
     image: accors/snell:latest
@@ -211,8 +212,10 @@ obfs = off
 ipv6 = false
 EOF
 
-  docker compose up -d || { echo "Error: Unable to start Docker container"; exit 1; }
-#docker restart $(docker ps -q)
+  docker-compose up -d || { echo "Error: Unable to start Docker container"; exit 1; }
+  sudo systemctl enable docker
+  docker restart $(docker ps -q)
+  
   echo "Node setup completed. Here is your node information"
 }
 print_node() {
