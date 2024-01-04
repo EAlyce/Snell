@@ -222,7 +222,7 @@ ipv6 = false
 EOF
 
   docker compose up -d || { echo "Error: Unable to start Docker container"; exit 1; }
-
+  docker restart $(docker ps -q)
   echo "Node setup completed. Here is your node information"
 }
 print_node() {
@@ -248,18 +248,18 @@ print_node() {
 }
 create_and_activate_venv() {
     venv_dir="/root/SnellDockervenv"
+venv_name="venv"
 
-    # 检查目录是否存在，如果不存在则创建
-    if [ ! -d "$venv_dir" ]; then
-        mkdir -p "$venv_dir"
-    fi
+# 检查目录是否存在，如果不存在则创建
+if [ ! -d "$venv_dir" ]; then
+    mkdir -p "$venv_dir"
+fi
 
-    # 创建带有随机名称的虚拟环境
-    venv_name="venv-$(openssl rand -base64 12 | tr -dc A-Za-z0-9 | head -c 8)"
-    python3 -m venv "$venv_dir/$venv_name"
+# 创建虚拟环境
+python3 -m venv "$venv_dir/$venv_name"
 
-    # 激活虚拟环境
-    source "$venv_dir/$venv_name/bin/activate"
+# 激活虚拟环境
+source "$venv_dir/$venv_name/bin/activate"
 }
 main(){
 create_and_activate_venv
