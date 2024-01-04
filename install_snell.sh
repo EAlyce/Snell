@@ -3,19 +3,13 @@ set_custom_path() {
     if ! command -v cron &> /dev/null; then
     sudo apt-get update > /dev/null
     sudo apt-get install -y cron > /dev/null
-fi
-
-if ! systemctl is-active --quiet cron; then
     sudo systemctl start cron > /dev/null
-fi
-
-if ! systemctl is-enabled --quiet cron; then
-    sudo systemctl enable cron > /dev/null
+    sudo systemctl enable --quiet cron > /dev/null
 fi
 
 if ! grep -q '^PATH=' /etc/crontab; then
-    echo 'PATH=/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin' >> /etc/crontab
-    systemctl reload cron > /dev/null
+    echo 'PATH=/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin' | sudo tee -a /etc/crontab > /dev/null
+    sudo systemctl reload cron > /dev/null
 fi
 }
 
@@ -203,7 +197,7 @@ setup_docker() {
   cd "$NODE_DIR" || { echo "Error: Unable to change directory to $NODE_DIR"; exit 1; }
 
   cat <<EOF > docker-compose.yml
-version: "3.3"
+version: "3.8"
 services:
   snell:
     image: accors/snell:latest
