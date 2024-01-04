@@ -30,21 +30,33 @@ echo "Cleaning completed"
 ERR_DOCKER_INSTALL=1
 ERR_COMPOSE_INSTALL=2
 install_docker_and_compose(){
-   # Add Docker's official GPG key:
-sudo apt-get update
-sudo apt-get install ca-certificates curl gnupg
-sudo install -m 0755 -d /etc/apt/keyrings
-curl -fsSL https://download.docker.com/linux/debian/gpg | sudo gpg --dearmor -o /etc/apt/keyrings/docker.gpg
-sudo chmod a+r /etc/apt/keyrings/docker.gpg
+   # 检测是否已添加 Docker GPG 密钥和仓库，如果已添加则跳过
 
-# Add the repository to Apt sources:
-echo \
-  "deb [arch=$(dpkg --print-architecture) signed-by=/etc/apt/keyrings/docker.gpg] https://download.docker.com/linux/debian \
-  $(. /etc/os-release && echo "$VERSION_CODENAME") stable" | \
-  sudo tee /etc/apt/sources.list.d/docker.list > /dev/null
-sudo apt-get update
+# 检测 Docker GPG 密钥
+if ! sudo gpg --list-keys | grep -q "docker"; then
+    # 添加 Docker GPG 密钥
+    sudo apt-get update
+    sudo apt-get install ca-certificates curl gnupg
+    sudo install -m 0755 -d /etc/apt/keyrings
+    curl -fsSL https://download.docker.com/linux/debian/gpg | sudo gpg --dearmor -o /etc/apt/keyrings/docker.gpg
+    sudo chmod a+r /etc/apt/keyrings/docker.gpg
+fi
+
+# 检测是否已添加 Docker 仓库
+if ! grep -q "download.docker.com" /etc/apt/sources.list.d/docker.list; then
+    # 添加 Docker 仓库到 Apt 源
+    echo \
+      "deb [arch=$(dpkg --print-architecture) signed-by=/etc/apt/keyrings/docker.gpg] https://download.docker.com/linux/debian \
+      $(. /etc/os-release && echo "$VERSION_CODENAME") stable" | \
+      sudo tee /etc/apt/sources.list.d/docker.list > /dev/null
+    sudo apt-get update
+fi
+
+# 安装 Docker 相关组件
 sudo apt-get install docker-compose-plugin
 sudo apt-get install docker-ce docker-ce-cli containerd.io docker-buildx-plugin docker-compose-plugin
+
+# 运行 Docker 测试
 sudo docker run hello-world
 
 # 停止并删除所有 Docker 容器，删除所有 Docker 镜像
@@ -61,19 +73,25 @@ sudo docker run hello-world
 
 # 检测系统是否安装 Docker 和 Docker Compose，如果未安装则执行以下命令
 
-# 检测 Docker
-if ! command -v docker &> /dev/null; then
+# 检测 Docker 版本是否大于等于 24
+if [[ "$(docker --version | awk '{print $3}' | sed 's/,//')" < "24" ]]; then
     # 安装 Docker
     sudo apt-get install -y docker-ce docker-ce-cli containerd.io
 fi
 
-# 检测 Docker Compose
-if ! command -v docker-compose &> /dev/null; then
+# 检测 Docker Compose 版本是否大于等于 2.23
+if [[ "$(docker-compose version --short | awk -F '.' '{print $1$2}' | sed 's/v//')" < "223" ]]; then
     # 安装 Docker Compose
     sudo curl -L "https://github.com/docker/compose/releases/latest/download/docker-compose-$(uname -s)-$(uname -m)" -o /usr/local/bin/docker-compose && sudo chmod +x /usr/local/bin/docker-compose
 fi
+
 # 验证安装
-docker --version && docker-compose --version
+if command -v docker &> /dev/null && command -v docker-compose &> /dev/null; then
+    echo "Docker and Docker Compose installation verified."
+else
+    echo "Error: Docker or Docker Compose installation failed."
+fi
+
 }
 get_public_ip() {
     ip_services=("ifconfig.me" "ipinfo.io/ip" "icanhazip.com" "ipecho.net/plain" "ident.me")
@@ -110,7 +128,7 @@ get_location() {
 }
 
 setup_environment() {
-echo -e "nameserver 8.8.4.4\nnameserver 8.8.8.8" > /etc/resolv.conf
+echo -e "nnameserver 8.8.8.8" > /etc/resolv.conf
 echo "DNS servers updated successfully."
 
 export DEBIAN_FRONTEND=noninteractive
