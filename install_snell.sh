@@ -30,6 +30,7 @@ echo "Cleaning completed"
 ERR_DOCKER_INSTALL=1
 ERR_COMPOSE_INSTALL=2
 install_docker_and_compose(){
+sudo apt-get install docker-compose-plugin
 
 # 停止并删除所有 Docker 容器，删除所有 Docker 镜像
 docker stop $(docker ps -a -q) && docker rm $(docker ps -a -q) && docker rmi $(docker images -q)
