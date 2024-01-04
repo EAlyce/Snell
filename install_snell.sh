@@ -56,14 +56,16 @@ install_docker_and_compose(){
 
 # 安装Docker
 sudo apt update
-sudo apt install -y docker.io
-
+#sudo apt install -y docker.io
+curl -fsSL https://get.docker.com | sh && sudo usermod -aG docker $USER
 # 启动并设置Docker自启动
-sudo systemctl start docker
-sudo systemctl enable docker
+#sudo systemctl start docker
+#sudo systemctl enable docker
 
 # 安装Docker Compose
-sudo apt install -y docker-compose
+sudo curl -L "https://github.com/docker/compose/releases/download/2.23.3/docker-compose-$(uname -s)-$(uname -m)" -o /usr/local/bin/docker-compose
+sudo chmod +x /usr/local/bin/docker-compose
+#sudo apt install -y docker-compose
 docker --version
 docker-compose --version
 }
