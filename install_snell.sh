@@ -239,7 +239,7 @@ EOF
 [snell-server]
 listen = 0.0.0.0:$PORT_NUMBER
 psk = $PASSWORD
-tfo = false
+tfo = true
 obfs = off
 ipv6 = false
 EOF
