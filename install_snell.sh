@@ -44,7 +44,7 @@ sudo apt-get autoremove -y > /dev/null && \
 sudo rm -rf /tmp/* > /dev/null && \
 history -c > /dev/null && \
 history -w > /dev/null && \
-docker system prune -a --volumes -f > /dev/null && \
+#docker system prune -a --volumes -f > /dev/null && \
 dpkg --list | egrep -i 'linux-image|linux-headers' | awk '/^ii/{print $2}' | grep -v `uname -r` | xargs apt-get -y purge > /dev/null && \
 echo "Cleaning completed"
 }
