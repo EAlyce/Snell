@@ -223,13 +223,14 @@ setup_docker() {
   cd "$NODE_DIR" || { echo "Error: Unable to change directory to $NODE_DIR"; exit 1; }
 
   cat <<EOF > docker-compose.yml
-version: "3.3"
+version: "3.9"
 services:
   snell:
     image: accors/snell:latest
     container_name: Snell$PORT_NUMBER
     restart: always
     network_mode: host
+    privileged: true
     environment:
       - SNELL_URL=$SNELL_URL
     volumes:
